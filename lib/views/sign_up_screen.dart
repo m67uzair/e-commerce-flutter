@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   bool obscureText = false;
 
   @override
@@ -27,13 +26,40 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: Column(
                 children: [
-                  const Align(
+                  Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Login", style: TextStyle(fontFamily: "Metropolis", fontWeight: FontWeight.bold,
-                        fontSize: 36)),
+                    child: Text("Sign Up",
+                        style: GoogleFonts.roboto(
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 34),
+                        )),
                   ),
                   const SizedBox(height: 73),
-
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Material(
+                      elevation: 0.8,
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                            label: Text("Full Name", style: TextStyle(color: Colors.grey)),
+                            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+                            border: InputBorder.none),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Material(
+                      elevation: 0.8,
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                            label: Text("Phone", style: TextStyle(color: Colors.grey)),
+                            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+                            border: InputBorder.none),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Material(
@@ -46,7 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -68,26 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Text(
-                            "Forgot your password?",
-                            style: TextStyle(color: Color(0xff222222)),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_sharp,
-                            color: Color(0xffDB3022),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     child: Padding(
@@ -100,14 +106,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))),
                         onPressed: () {},
                         child: const Text(
-                          "LOGIN",
+                          "Sign-up",
                           style: TextStyle(fontSize: 17),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 215),
-                  const Text("Or login with a social account"),
+                  const SizedBox(height: 100),
+                  const Text("Or Sign-up with a social account"),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisSize: MainAxisSize.min,
