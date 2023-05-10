@@ -1,13 +1,11 @@
-import 'dart:convert';
-
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import '../Models/products_model.dart';
+import '../Controllers/products_controller.dart';
+
+final productsApi = ProductsController();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,22 +15,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<ProductsModel> productsList = [];
-
-  Future<List<ProductsModel>> getProductsData() async {
-    final response = await http.get(Uri.parse('https://fakestoreapi.com/products'));
-    var data = jsonDecode(response.body.toString());
-    if (response.statusCode == 200) {
-      productsList.clear();
-      for (Map i in data) {
-        productsList.add(ProductsModel.fromJson(i));
-      }
-      return productsList;
-    } else {
-      return productsList;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,82 +38,152 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Men's Clothing",
                   imagePath: "assets/images/men's clothing model.PNG",
                 ),
-                ItemCarousel(title: "Women's Clothing", imagePath: "assets/images/women1.png")
+                ItemCarousel(title: "Women's Clothing", imagePath: "assets/images/women1.png"),
+                // ItemCarousel(title: "Electronics", imagePath: "assets/images/electronics.jpeg"),
+                // ItemCarousel(title: "Jewellery", imagePath: "assets/images/jewellery.jpeg"),
               ], options: CarouselOptions(autoPlay: false, viewportFraction: 1, height: 400)),
             ),
-            const SizedBox(height: 150),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Men's Clothing",
-                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 30)),
-                  TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        "View All",
-                        style: TextStyle(color: Colors.black87, fontSize: 16),
-                      ))
-                ],
-              ),
+            const SizedBox(height: 30),
+            ProductList(
+              productsListTitle: "Men's Clothing",
+              onViewAllPressed: () {},
             ),
-            SizedBox(
-              height: 280,
-              child: FutureBuilder(
-                future: getProductsData(),
-                builder: (context, AsyncSnapshot<List<ProductsModel>> snapshot) {
-                  return ListView.builder(
-                    itemCount: productsList.length,
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (context, index) {
-                      if (!snapshot.hasData) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else {
-                        return SizedBox(
-                          width: 160,
-                          child: Stack(
-                            children: [
-                              Card(
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 10),
-                                    Stack(
-                                      children: [
-                                        Image.network(snapshot.data![index].image.toString()),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 30,
-                                right: -2,
-                                child: Container(
-                                  height: 45,
-                                  width: 45,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(50),
-                                      color: Colors.white,
-                                      boxShadow: const [
-                                        BoxShadow(
-                                            color: Colors.black45, spreadRadius: 1, blurRadius: 3, offset: Offset.zero)
-                                      ]),
-                                  child: const Icon(Icons.favorite_border),
-                                ),
-                              )
-                            ],
-                          ),
-                        );
-                      }
-                    },
-                  );
-                },
-              ),
+            const SizedBox(height: 50),
+            ProductList(
+              productsListTitle: "Women's Clothing",
+              onViewAllPressed: () {},
+            ),
+            const SizedBox(height: 50),
+            ProductList(
+              productsListTitle: "Electronics",
+              onViewAllPressed: () {},
+            ),
+            const SizedBox(height: 50),
+            ProductList(
+              productsListTitle: "Jewellery",
+              onViewAllPressed: () {},
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class ProductList extends StatelessWidget {
+  final String productsListTitle;
+  final Function onViewAllPressed;
+
+  ProductList({required this.productsListTitle, required this.onViewAllPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Column(children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(productsListTitle,
+                style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 30)),
+            TextButton(
+                onPressed: onViewAllPressed(),
+                child: const Text(
+                  "View All",
+                  style: TextStyle(color: Colors.black87, fontSize: 16),
+                ))
+          ],
+        ),
+        SizedBox(
+          height: 280,
+          child: FutureBuilder(
+            future: productsApi.getProductsData(productsListTitle.toLowerCase()),
+            builder: (context, AsyncSnapshot<List<ProductsModel>> snapshot) {
+              return ListView.builder(
+                itemCount: 4,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else {
+                    return snapshot.data!.isNotEmpty
+                        ? ProductCard(
+                            productsImageURL: snapshot.data![index].image.toString(),
+                            productsTitleURL: snapshot.data![index].title.toString(),
+                          )
+                        : Container();
+                  }
+                },
+              );
+            },
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
+class ProductCard extends StatelessWidget {
+  final String productsTitleURL;
+  final String productsImageURL;
+
+  const ProductCard({Key? key, required this.productsTitleURL, required this.productsImageURL}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 180,
+      child: Stack(
+        children: [
+          Card(
+            elevation: 0,
+            color: Colors.transparent,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(productsImageURL),
+                  ),
+                ),
+                RatingBar.builder(
+                    itemCount: 5,
+                    initialRating: 0,
+                    maxRating: 5,
+                    minRating: 0,
+                    allowHalfRating: true,
+                    itemSize: 22,
+                    itemBuilder: (context, index) => const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                    onRatingUpdate: (rating) {
+                      print(rating);
+                    }),
+                Text(
+                  productsTitleURL,
+                  maxLines: 2,
+                  style: const TextStyle(
+                      color: Colors.black, fontSize: 15, fontWeight: FontWeight.w500, overflow: TextOverflow.ellipsis),
+                )
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 40,
+            right: 0,
+            child: Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(50), color: Colors.white, boxShadow: const [
+                BoxShadow(color: Colors.black45, spreadRadius: 1, blurRadius: 3, offset: Offset.zero)
+              ]),
+              child: const Icon(Icons.favorite_border),
+            ),
+          )
+        ],
       ),
     );
   }
