@@ -6,7 +6,7 @@ class ProductsController {
   List<ProductsModel> mensProductsList = [];
   List<ProductsModel> womensProductsList = [];
   List<ProductsModel> electronicsProductsList = [];
-  List<ProductsModel> jewelleryProductsList = [];
+  List<ProductsModel> jeweleryProductsList = [];
 
   Future<List<ProductsModel>> getProductsData(String category) async {
     final response = await http.get(Uri.parse('https://fakestoreapi.com/products/category/$category'));
@@ -30,13 +30,13 @@ class ProductsController {
             }
             return womensProductsList;
           }
-        case "jewellery":
+        case "jewelery":
           {
-            jewelleryProductsList.clear();
+            jeweleryProductsList.clear();
             for (Map i in data) {
-              jewelleryProductsList.add(ProductsModel.fromJson(i));
+              jeweleryProductsList.add(ProductsModel.fromJson(i));
             }
-            return jewelleryProductsList;
+            return jeweleryProductsList;
           }
         case "electronics":
           {

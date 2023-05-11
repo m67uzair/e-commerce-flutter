@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 ItemCarousel(title: "Women's Clothing", imagePath: "assets/images/women1.png"),
                 ItemCarousel(title: "Electronics", imagePath: "assets/images/electronics.jpeg"),
-                ItemCarousel(title: "Jewellery", imagePath: "assets/images/jewellery.jpeg"),
+                ItemCarousel(title: "jewelery", imagePath: "assets/images/jewelery.jpeg"),
               ], options: CarouselOptions(autoPlay: true, viewportFraction: 1, height: 400)),
             ),
             const SizedBox(height: 30),
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 50),
             ProductList(
-              productsListTitle: "Jewellery",
+              productsListTitle: "jewelery",
               onViewAllPressed: () {},
             ),
           ],
