@@ -39,9 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   imagePath: "assets/images/men's clothing model.PNG",
                 ),
                 ItemCarousel(title: "Women's Clothing", imagePath: "assets/images/women1.png"),
-                // ItemCarousel(title: "Electronics", imagePath: "assets/images/electronics.jpeg"),
-                // ItemCarousel(title: "Jewellery", imagePath: "assets/images/jewellery.jpeg"),
-              ], options: CarouselOptions(autoPlay: false, viewportFraction: 1, height: 400)),
+                ItemCarousel(title: "Electronics", imagePath: "assets/images/electronics.jpeg"),
+                ItemCarousel(title: "Jewellery", imagePath: "assets/images/jewellery.jpeg"),
+              ], options: CarouselOptions(autoPlay: true, viewportFraction: 1, height: 400)),
             ),
             const SizedBox(height: 30),
             ProductList(
@@ -108,9 +108,12 @@ class ProductList extends StatelessWidget {
                   } else {
                     return snapshot.data!.isNotEmpty
                         ? ProductCard(
-                            productsImageURL: snapshot.data![index].image.toString(),
-                            productsTitleURL: snapshot.data![index].title.toString(),
-                          )
+                      productsImageURL: snapshot.data![index].image.toString(),
+                      productsTitleURL: snapshot.data![index].title.toString(),
+                      productRating: snapshot.data![index].rating!.rate!.toDouble(),
+                      productRatingCount: snapshot.data![index].rating!.count!.toInt(),
+                      productPrice: snapshot.data![index].price!.toDouble(),
+                    )
                         : Container();
                   }
                 },
@@ -126,8 +129,17 @@ class ProductList extends StatelessWidget {
 class ProductCard extends StatelessWidget {
   final String productsTitleURL;
   final String productsImageURL;
+  final int productRatingCount;
+  final double productRating;
+  final double productPrice;
 
-  const ProductCard({Key? key, required this.productsTitleURL, required this.productsImageURL}) : super(key: key);
+  const ProductCard({Key? key,
+    required this.productsTitleURL,
+    required this.productsImageURL,
+    required this.productRating,
+    required this.productRatingCount,
+    required this.productPrice})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -148,37 +160,49 @@ class ProductCard extends StatelessWidget {
                     child: Image.network(productsImageURL),
                   ),
                 ),
-                RatingBar.builder(
-                    itemCount: 5,
-                    initialRating: 0,
-                    maxRating: 5,
-                    minRating: 0,
-                    allowHalfRating: true,
-                    itemSize: 22,
-                    itemBuilder: (context, index) => const Icon(
+                Row(
+                  children: [
+                    RatingBar.builder(
+                        itemCount: 5,
+                        initialRating: productRating,
+                        maxRating: productRating,
+                        minRating: productRating,
+                        ignoreGestures: true,
+                        allowHalfRating: true,
+                        itemSize: 22,
+                        itemBuilder: (context, index) =>
+                        const Icon(
                           Icons.star,
                           color: Colors.amber,
                         ),
-                    onRatingUpdate: (rating) {
-                      print(rating);
-                    }),
+                        onRatingUpdate: (rating) {
+                          print(rating);
+                        }),
+                    const SizedBox(width: 5),
+                    Text('($productRatingCount)')
+                  ],
+                ),
                 Text(
                   productsTitleURL,
                   maxLines: 2,
                   style: const TextStyle(
                       color: Colors.black, fontSize: 15, fontWeight: FontWeight.w500, overflow: TextOverflow.ellipsis),
+                ),
+                Text(
+                  "$productPrice\$",
+                  style: const TextStyle(color: Colors.black),
                 )
               ],
             ),
           ),
           Positioned(
-            bottom: 40,
-            right: 0,
+            bottom: 47,
+            right: -1,
             child: Container(
-              height: 40,
-              width: 40,
+              height: 30,
+              width: 30,
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(50), color: Colors.white, boxShadow: const [
-                BoxShadow(color: Colors.black45, spreadRadius: 1, blurRadius: 3, offset: Offset.zero)
+                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 5, offset: Offset.zero)
               ]),
               child: const Icon(Icons.favorite_border),
             ),
@@ -206,7 +230,10 @@ class ItemCarousel extends StatelessWidget {
         Image.asset(
           imagePath,
           fit: BoxFit.cover,
-          width: MediaQuery.of(context).size.width,
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
         ),
         Positioned(
           bottom: 10,
