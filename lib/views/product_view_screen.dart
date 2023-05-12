@@ -34,7 +34,7 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
             Row(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                   child: ElevatedButton(
                     style: ButtonStyle(
                         backgroundColor: const MaterialStatePropertyAll(Color(0xd7cb5500)),
@@ -65,7 +65,7 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(
             height: 380,
             width: MediaQuery.of(context).size.width,
@@ -113,7 +113,7 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                                   color: Colors.amber,
                                 ),
                             onRatingUpdate: (rating) {
-                              print(rating);
+                              // print(rating);
                             }),
                         const SizedBox(width: 5),
                         const Text("(20)")
@@ -125,41 +125,165 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                         "ipsum dorem totem idk lorem ipsum dorem totem idk lorem ipsum dorem "),
                     const SizedBox(height: 8),
                     Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                        decoration:
-                            BoxDecoration(color: const Color(0xFFF5F2F0), borderRadius: BorderRadius.circular(10)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.fire_truck,
-                                  color: Colors.blueGrey[800],
-                                ),
-                                RichText(
-                                  text: TextSpan(
-                                      text: "  Standard delivery  ",
-                                      style: TextStyle(
-                                          color: Colors.blueGrey[800], fontSize: 18, fontWeight: FontWeight.w500),
-                                      children: [
-                                        TextSpan(
-                                            text: "16-20 days",
-                                            style: TextStyle(color: Colors.blueGrey[700], fontSize: 15))
-                                      ]),
-                                )
-                              ],
-                            ),
-                            Icon(Icons.arrow_forward_ios_outlined, color: Colors.blueGrey[800])
-                          ],
-                        ))
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                      decoration:
+                          BoxDecoration(color: const Color(0xFFF5F2F0), borderRadius: BorderRadius.circular(10)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.fire_truck,
+                                color: Colors.blueGrey[800],
+                              ),
+                              RichText(
+                                text: TextSpan(
+                                    text: "  Standard delivery  ",
+                                    style: TextStyle(
+                                        color: Colors.blueGrey[800], fontSize: 18, fontWeight: FontWeight.w500),
+                                    children: [
+                                      TextSpan(
+                                          text: "16-20 days",
+                                          style: TextStyle(color: Colors.blueGrey[700], fontSize: 15))
+                                    ]),
+                              )
+                            ],
+                          ),
+                          Icon(Icons.arrow_forward_ios_outlined, color: Colors.blueGrey[800])
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-          )
+          ),
+          const SizedBox(height: 20),
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("8 Reviews", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+                          builder: (context) => Container(
+                            height: MediaQuery.of(context).size.height * 0.80,
+                            child: Column(
+                              children: [
+                                SizedBox(height: 10),
+                                const Text("Write a review",
+                                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
+                                const SizedBox(height: 10),
+                                RatingBar.builder(
+                                    minRating: 0,
+                                    maxRating: 5,
+                                    allowHalfRating: true,
+                                    itemCount: 5,
+                                    itemPadding: const EdgeInsets.symmetric(horizontal: 5),
+                                    itemBuilder: (context, index) => const Icon(Icons.star, color: Colors.amber),
+                                    onRatingUpdate: (rating) {}),
+                                const SizedBox(height: 30),
+                                const Text("Please Share your opinion",
+                                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                  child: TextFormField(
+                                    decoration:
+                                        const InputDecoration(
+                                            hintText: "Write a review", border: OutlineInputBorder()
+                                        ),
+                                    maxLines: 10,
+                                  ),
+                                ),
+
+                              ],
+                            ),
+                          ),
+                        );
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.edit,
+                    ),
+                    label: const Text("Write a "
+                        "review"),
+                    style: const ButtonStyle(foregroundColor: MaterialStatePropertyAll(Colors.black)),
+                  ),
+                ],
+              )),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            // height: double.infinity,
+            decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+                color: Colors.white),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+              child: Column(
+                children: const [
+                  UserReview(),
+                  SizedBox(height: 10),
+                  UserReview(),
+                  SizedBox(height: 10),
+                  UserReview(),
+                  SizedBox(height: 10),
+                  UserReview(),
+                ],
+              ),
+            ),
+          ),
         ]),
       ),
+    );
+  }
+}
+
+class UserReview extends StatelessWidget {
+  const UserReview({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("John Doe", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: const [
+                Icon(Icons.star, color: Colors.amber, size: 18),
+                Icon(Icons.star, color: Colors.amber, size: 18),
+                Icon(Icons.star, color: Colors.amber, size: 18),
+                Icon(Icons.star, color: Colors.amber, size: 18),
+                Icon(Icons.star_border, size: 18),
+              ],
+            ),
+            const Text(
+              "August 12, 2022",
+              style: TextStyle(color: Color(0xff9B9B9B)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        const Text(
+          "lorem ipsum dorm totem idk lorem ipsum dorem totem"
+          "idklorem ipsum dorem totem idk lorem ipsum dorem "
+          "totem idk lorem ipsum dorem totem idk",
+          style: TextStyle(color: Color(0xFF222222), fontSize: 16),
+        )
+      ],
     );
   }
 }
