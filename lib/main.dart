@@ -1,4 +1,5 @@
 import 'package:ecommerce_app_flutter/views/home_screen.dart';
+import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
 import 'package:ecommerce_app_flutter/views/product_view_screen.dart';
 import 'package:ecommerce_app_flutter/views/sign_up_screen.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ class ECommerceApp extends StatelessWidget {
     return MaterialApp(
       title: "E-commerce App flutter",
       debugShowCheckedModeBanner: false,
-      home: const ProductViewScreen(),
+      home:  const MyCartScreen(),
       theme: ThemeData(
           appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xffF9F9F9),

@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:ecommerce_app_flutter/views/product_view_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -70,12 +71,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class ProductList extends StatelessWidget {
+class ProductList extends StatefulWidget {
   final String productsListTitle;
   final Function onViewAllPressed;
 
   ProductList({required this.productsListTitle, required this.onViewAllPressed});
 
+  @override
+  State<ProductList> createState() => _ProductListState();
+}
+
+class _ProductListState extends State<ProductList> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -84,10 +90,10 @@ class ProductList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(productsListTitle,
+            Text(widget.productsListTitle,
                 style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 30)),
             TextButton(
-                onPressed: onViewAllPressed(),
+                onPressed: widget.onViewAllPressed(),
                 child: const Text(
                   "View All",
                   style: TextStyle(color: Colors.black87, fontSize: 16),
@@ -97,7 +103,7 @@ class ProductList extends StatelessWidget {
         SizedBox(
           height: 280,
           child: FutureBuilder(
-            future: productsApi.getProductsData(productsListTitle.toLowerCase()),
+            future: productsApi.getProductsData(widget.productsListTitle.toLowerCase()),
             builder: (context, AsyncSnapshot<List<ProductsModel>> snapshot) {
               return ListView.builder(
                 itemCount: 4,
@@ -107,13 +113,28 @@ class ProductList extends StatelessWidget {
                     return const Center(child: CircularProgressIndicator());
                   } else {
                     return snapshot.data!.isNotEmpty
-                        ? ProductCard(
-                      productsImageURL: snapshot.data![index].image.toString(),
-                      productsTitleURL: snapshot.data![index].title.toString(),
-                      productRating: snapshot.data![index].rating!.rate!.toDouble(),
-                      productRatingCount: snapshot.data![index].rating!.count!.toInt(),
-                      productPrice: snapshot.data![index].price!.toDouble(),
-                    )
+                        ? InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ProductViewScreen(
+                                            productImageURL: snapshot.data![index].image.toString(),
+                                            productTitle: snapshot.data![index].title.toString(),
+                                            productPrice: snapshot.data![index].price.toString(),
+                                            productDescription: snapshot.data![index].description.toString(),
+                                            productRating: snapshot.data![index].rating!,
+                                          )));
+                              setState(() {});
+                            },
+                            child: ProductCard(
+                              productsImageURL: snapshot.data![index].image.toString(),
+                              productsTitleURL: snapshot.data![index].title.toString(),
+                              productRating: snapshot.data![index].rating!.rate!.toDouble(),
+                              productRatingCount: snapshot.data![index].rating!.count!.toInt(),
+                              productPrice: snapshot.data![index].price!.toDouble(),
+                            ),
+                          )
                         : Container();
                   }
                 },
@@ -133,12 +154,13 @@ class ProductCard extends StatelessWidget {
   final double productRating;
   final double productPrice;
 
-  const ProductCard({Key? key,
-    required this.productsTitleURL,
-    required this.productsImageURL,
-    required this.productRating,
-    required this.productRatingCount,
-    required this.productPrice})
+  const ProductCard(
+      {Key? key,
+      required this.productsTitleURL,
+      required this.productsImageURL,
+      required this.productRating,
+      required this.productRatingCount,
+      required this.productPrice})
       : super(key: key);
 
   @override
@@ -170,11 +192,10 @@ class ProductCard extends StatelessWidget {
                         ignoreGestures: true,
                         allowHalfRating: true,
                         itemSize: 22,
-                        itemBuilder: (context, index) =>
-                        const Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                        ),
+                        itemBuilder: (context, index) => const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                            ),
                         onRatingUpdate: (rating) {
                           print(rating);
                         }),
@@ -230,10 +251,7 @@ class ItemCarousel extends StatelessWidget {
         Image.asset(
           imagePath,
           fit: BoxFit.cover,
-          width: MediaQuery
-              .of(context)
-              .size
-              .width,
+          width: MediaQuery.of(context).size.width,
         ),
         Positioned(
           bottom: 10,

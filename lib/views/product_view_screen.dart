@@ -1,12 +1,26 @@
 import 'dart:io';
 
+import 'package:ecommerce_app_flutter/Models/products_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProductViewScreen extends StatefulWidget {
-  const ProductViewScreen({Key? key}) : super(key: key);
+  final String productImageURL;
+  final String productTitle;
+  final String productPrice;
+  final String productDescription;
+  final Rating productRating;
+
+  const ProductViewScreen(
+      {Key? key,
+      required this.productImageURL,
+      required this.productTitle,
+      required this.productPrice,
+      required this.productDescription,
+      required this.productRating})
+      : super(key: key);
 
   @override
   State<ProductViewScreen> createState() => _ProductViewScreenState();
@@ -26,9 +40,10 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
         centerTitle: true,
-        title: const Text(
-          "Men's fit bag",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+        title: Text(
+          widget.productTitle,
+          style: const TextStyle(
+              color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20, overflow: TextOverflow.ellipsis),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -75,7 +90,7 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
             height: 380,
             width: MediaQuery.of(context).size.width,
             decoration: const BoxDecoration(color: Colors.white),
-            child: Image.network("https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg"),
+            child: Image.network(widget.productImageURL),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8, right: 8, top: 10),
@@ -86,12 +101,13 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Men's Fit backpack bag", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
+                    Text(widget.productTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
                     const SizedBox(height: 5),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("5,490\$", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                        Text("${widget.productPrice}\$",
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
                         Container(
                           height: 30,
                           width: 30,
@@ -107,9 +123,9 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                       children: [
                         RatingBar.builder(
                             itemCount: 5,
-                            initialRating: 5,
-                            maxRating: 5,
-                            minRating: 0,
+                            initialRating: widget.productRating.rate!.toDouble(),
+                            maxRating: widget.productRating.rate!.toDouble(),
+                            minRating: widget.productRating.rate!.toDouble(),
                             ignoreGestures: true,
                             allowHalfRating: true,
                             itemSize: 20,
@@ -121,13 +137,11 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                               // print(rating);
                             }),
                         const SizedBox(width: 5),
-                        const Text("(20)")
+                        Text("(${widget.productRating.count!.toInt()})")
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                        "lorem ipsum dorem totem idk lorem ipsum dorem totem idk lorem ipsum dorem, totem idk lorem "
-                        "ipsum dorem totem idk lorem ipsum dorem totem idk lorem ipsum dorem "),
+                    Text(widget.productDescription),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -254,8 +268,7 @@ class ReviewModelSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: TextFormField(
-                decoration: const InputDecoration(
-                    hintText: "Write a review", border: OutlineInputBorder()),
+                decoration: const InputDecoration(hintText: "Write a review", border: OutlineInputBorder()),
                 maxLines: 10,
               ),
             ),
@@ -301,10 +314,7 @@ class ReviewModelSheet extends StatelessWidget {
                                   ),
                                   Text(
                                     "Add a photo",
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600),
+                                    style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
@@ -316,8 +326,7 @@ class ReviewModelSheet extends StatelessWidget {
                             decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
-                                image:
-                                    DecorationImage(image: FileImage(File(images![index].path)))),
+                                image: DecorationImage(image: FileImage(File(images![index].path)))),
                           );
                   },
                 ),
