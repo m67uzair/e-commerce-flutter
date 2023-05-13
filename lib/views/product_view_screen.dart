@@ -181,102 +181,7 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                           shape: const RoundedRectangleBorder(
                               borderRadius:
                                   BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
-                          builder: (context) => StatefulBuilder(
-                            builder: (BuildContext context, void Function(void Function()) setModalState) => Container(
-                              height: MediaQuery.of(context).size.height * 0.80,
-                              child: Column(
-                                children: [
-                                  SizedBox(height: 10),
-                                  const Text("Write a review",
-                                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
-                                  const SizedBox(height: 10),
-                                  RatingBar.builder(
-                                      minRating: 0,
-                                      maxRating: 5,
-                                      allowHalfRating: true,
-                                      itemCount: 5,
-                                      itemPadding: const EdgeInsets.symmetric(horizontal: 5),
-                                      itemBuilder: (context, index) => const Icon(Icons.star, color: Colors.amber),
-                                      onRatingUpdate: (rating) {}),
-                                  const SizedBox(height: 30),
-                                  const Text("Please Share your opinion",
-                                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                    child: TextFormField(
-                                      decoration: const InputDecoration(
-                                          hintText: "Write a review", border: OutlineInputBorder()),
-                                      maxLines: 10,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                    child: SizedBox(
-                                      height: 120,
-                                      width: MediaQuery.of(context).size.width * 80,
-                                      child: ListView.builder(
-                                        itemCount: images!.isEmpty ? 1 : images!.length,
-                                        scrollDirection: Axis.horizontal,
-                                        itemBuilder: (context, index) {
-                                          return images!.isEmpty || index == 0
-                                              ? GestureDetector(
-                                                  onTap: () async {
-                                                    ImagePicker picker = ImagePicker();
-                                                    final List<XFile> pickedImages = await picker.pickMultiImage();
-                                                    if (pickedImages.isNotEmpty) {
-                                                      images!.addAll(pickedImages);
-                                                    }
-                                                    setModalState(() {});
-                                                  },
-                                                  child: Container(
-                                                    height: 120,
-                                                    width: 120,
-                                                    color: Colors.white,
-                                                    child: Column(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                                      children: const [
-                                                        SizedBox(
-                                                          width: 60,
-                                                          height: 60,
-                                                          child: CircleAvatar(
-                                                            backgroundColor: Colors.red,
-                                                            radius: 50,
-                                                            child: Icon(
-                                                              Icons.camera_alt,
-                                                              size: 40,
-                                                              color: Colors.white,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          "Add a photo",
-                                                          style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontSize: 16,
-                                                              fontWeight: FontWeight.w600),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                )
-                                              : Container(
-                                                  height: 100,
-                                                  width: 100,
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius: BorderRadius.circular(20),
-                                                      image:
-                                                          DecorationImage(image: FileImage(File(images![index].path)))),
-                                                );
-                                        },
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
+                          builder: (context) => ReviewModelSheet(images: images),
                         );
                       });
                     },
@@ -311,6 +216,115 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
             ),
           ),
         ]),
+      ),
+    );
+  }
+}
+
+class ReviewModelSheet extends StatelessWidget {
+  const ReviewModelSheet({
+    super.key,
+    required this.images,
+  });
+
+  final List<XFile>? images;
+
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(
+      builder: (BuildContext context, void Function(void Function()) setModalState) => Container(
+        height: MediaQuery.of(context).size.height * 0.80,
+        child: Column(
+          children: [
+            SizedBox(height: 10),
+            const Text("Write a review",
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
+            const SizedBox(height: 10),
+            RatingBar.builder(
+                minRating: 0,
+                maxRating: 5,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemPadding: const EdgeInsets.symmetric(horizontal: 5),
+                itemBuilder: (context, index) => const Icon(Icons.star, color: Colors.amber),
+                onRatingUpdate: (rating) {}),
+            const SizedBox(height: 30),
+            const Text("Please Share your opinion",
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: TextFormField(
+                decoration: const InputDecoration(
+                    hintText: "Write a review", border: OutlineInputBorder()),
+                maxLines: 10,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SizedBox(
+                height: 120,
+                width: MediaQuery.of(context).size.width * 80,
+                child: ListView.builder(
+                  itemCount: images!.isEmpty ? 1 : images!.length,
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    return images!.isEmpty || index == 0
+                        ? GestureDetector(
+                            onTap: () async {
+                              ImagePicker picker = ImagePicker();
+                              final List<XFile> pickedImages = await picker.pickMultiImage();
+                              if (pickedImages.isNotEmpty) {
+                                images!.addAll(pickedImages);
+                              }
+                              setModalState(() {});
+                            },
+                            child: Container(
+                              height: 120,
+                              width: 120,
+                              color: Colors.white,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: const [
+                                  SizedBox(
+                                    width: 60,
+                                    height: 60,
+                                    child: CircleAvatar(
+                                      backgroundColor: Colors.red,
+                                      radius: 50,
+                                      child: Icon(
+                                        Icons.camera_alt,
+                                        size: 40,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    "Add a photo",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Container(
+                            height: 100,
+                            width: 100,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                image:
+                                    DecorationImage(image: FileImage(File(images![index].path)))),
+                          );
+                  },
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
