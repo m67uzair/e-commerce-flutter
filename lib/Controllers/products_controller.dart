@@ -52,4 +52,16 @@ class ProductsController {
       return [];
     }
   }
+
+  Future<ProductsModel> getSingleProductData(int productId) async {
+    final response = await http.get(Uri.parse('https://fakestoreapi.com/products/$productId'));
+    var data = jsonDecode(response.body.toString());
+    print("single product data getoooo : $data");
+
+    if (response.statusCode == 200) {
+      return ProductsModel.fromJson(data);
+    }
+
+    return ProductsModel.fromJson(data);
+  }
 }

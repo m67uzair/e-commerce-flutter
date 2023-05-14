@@ -1,9 +1,10 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 
 class MyCartScreen extends StatefulWidget {
-  const MyCartScreen({Key? key}) : super(key: key);
+  final int productId;
+  final String productTitle;
+  final String productPrice;
+  const MyCartScreen({Key? key, required this.productId, required this.productTitle, required this.productPrice}) : super(key: key);
 
   @override
   State<MyCartScreen> createState() => _MyCartScreenState();
@@ -34,14 +35,22 @@ class _MyCartScreenState extends State<MyCartScreen> {
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.55,
                 child: ListView(
-                  children: const [
-                    CartProductCard(),
-                    SizedBox(height: 10),
-                    CartProductCard(),
-                    SizedBox(height: 10),
-                    CartProductCard(),
-                    SizedBox(height: 10),
-                    CartProductCard(),
+                  children: [
+                    CartProductCard(
+                      productPrice: '51',
+                    ),
+                    const SizedBox(height: 10),
+                    CartProductCard(
+                      productPrice: '',
+                    ),
+                    const SizedBox(height: 10),
+                    CartProductCard(
+                      productPrice: '',
+                    ),
+                    const SizedBox(height: 10),
+                    CartProductCard(
+                      productPrice: '',
+                    ),
                   ],
                 ),
               ),
@@ -65,12 +74,11 @@ class _MyCartScreenState extends State<MyCartScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: ElevatedButton(
-
                     style: ButtonStyle(
                         backgroundColor: const MaterialStatePropertyAll(Color(0xffDB3022)),
                         padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 16)),
-                        shape: MaterialStatePropertyAll(
-                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))),
+                        shape:
+                            MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))),
                     onPressed: () {},
                     child: const Text(
                       "CHECKOUT",
@@ -87,10 +95,28 @@ class _MyCartScreenState extends State<MyCartScreen> {
   }
 }
 
-class CartProductCard extends StatelessWidget {
-  const CartProductCard({
+class CartProductCard extends StatefulWidget {
+  int count = 1;
+   String productPrice;
+   String originalPrice = '';
+
+  CartProductCard({
     super.key,
+    required this.productPrice,
   });
+
+  @override
+  State<CartProductCard> createState() => _CartProductCardState();
+}
+
+
+class _CartProductCardState extends State<CartProductCard> {
+
+  @override
+  void initState() {
+    widget.originalPrice = widget.productPrice;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +174,7 @@ class CartProductCard extends StatelessWidget {
                       )
                     ],
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -156,27 +182,47 @@ class CartProductCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           FloatingActionButton.small(
-                              onPressed: () {},
+
+                              onPressed: widget.count == 1 ? null : () {
+                                setState(() {
+                                  widget.count--;
+                                  widget.productPrice =
+                                      (int.parse(widget.productPrice) - int.parse(widget.originalPrice))
+                                          .toString();
+                                  print(widget.productPrice);
+                                });
+                              },
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.grey,
                               elevation: 3,
                               child: const Icon(Icons.remove)),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 6),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
                             child: Text(
-                              "1",
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                              "${widget.count}",
+                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                             ),
                           ),
                           FloatingActionButton.small(
-                              onPressed: () {},
+                              onPressed: () {
+                                setState(() {
+                                  widget.count++;
+                                  widget.productPrice =
+                                      (int.parse(widget.productPrice) + int.parse(widget.originalPrice))
+                                          .toString();
+                                  print(widget.productPrice);
+
+
+                                });
+                              },
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.grey,
                               elevation: 3,
                               child: const Icon(Icons.add)),
                         ],
                       ),
-                      const Text("51\$", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+                      Text("${widget.productPrice}\$",
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
                     ],
                   )
                 ],

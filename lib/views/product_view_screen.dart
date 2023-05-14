@@ -1,14 +1,16 @@
 import 'dart:io';
 
 import 'package:ecommerce_app_flutter/Models/products_model.dart';
+import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProductViewScreen extends StatefulWidget {
-  final String productImageURL;
+  final int productId;
   final String productTitle;
+  final String productImageURL;
   final String productPrice;
   final String productDescription;
   final Rating productRating;
@@ -19,7 +21,8 @@ class ProductViewScreen extends StatefulWidget {
       required this.productTitle,
       required this.productPrice,
       required this.productDescription,
-      required this.productRating})
+      required this.productRating,
+      required this.productId})
       : super(key: key);
 
   @override
@@ -73,7 +76,16 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                       backgroundColor: const MaterialStatePropertyAll(Color(0xffDB3022)),
                       padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 10, horizontal: 16)),
                       shape: MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)))),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MyCartScreen(
+                              productId: widget.productId,
+                              productTitle: widget.productTitle,
+                              productPrice: widget.productPrice),
+                        ));
+                  },
                   child: const Text(
                     "Add to cart",
                     style: TextStyle(fontSize: 17),

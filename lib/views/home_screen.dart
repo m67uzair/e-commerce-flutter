@@ -119,8 +119,9 @@ class _ProductListState extends State<ProductList> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => ProductViewScreen(
-                                            productImageURL: snapshot.data![index].image.toString(),
-                                            productTitle: snapshot.data![index].title.toString(),
+                                            productId: snapshot.data![index].id!.toInt(),
+                                                productImageURL: snapshot.data![index].image.toString(),
+                                                productTitle: snapshot.data![index].title.toString(),
                                             productPrice: snapshot.data![index].price.toString(),
                                             productDescription: snapshot.data![index].description.toString(),
                                             productRating: snapshot.data![index].rating!,
