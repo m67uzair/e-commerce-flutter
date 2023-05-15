@@ -1,11 +1,14 @@
 import 'dart:io';
 
 import 'package:ecommerce_app_flutter/Models/products_model.dart';
+import 'package:ecommerce_app_flutter/views/home_screen.dart';
 import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
+
+final productsModel = ProductsModel();
 
 class ProductViewScreen extends StatefulWidget {
   final int productId;
@@ -77,14 +80,11 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                       padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 10, horizontal: 16)),
                       shape: MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)))),
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MyCartScreen(
-                              productId: widget.productId,
-                              productTitle: widget.productTitle,
-                              productPrice: widget.productPrice),
-                        ));
+                    productsApi.addProductToCart(productsModel.copyWith(
+                        id: widget.productId,
+                        title: widget.productId.toString(),
+                        image: widget.productImageURL,
+                        price: int.parse(widget.productPrice)));
                   },
                   child: const Text(
                     "Add to cart",

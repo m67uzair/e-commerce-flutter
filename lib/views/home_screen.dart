@@ -1,5 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:ecommerce_app_flutter/views/favorites_screen.dart';
+import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
 import 'package:ecommerce_app_flutter/views/product_view_screen.dart';
+import 'package:ecommerce_app_flutter/views/profile_screen.dart';
+import 'package:ecommerce_app_flutter/views/shop_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -16,6 +20,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
       //   ),
       //   actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.shopping_cart_outlined))],
       // ),
+
       body: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -120,8 +127,8 @@ class _ProductListState extends State<ProductList> {
                                   MaterialPageRoute(
                                       builder: (context) => ProductViewScreen(
                                             productId: snapshot.data![index].id!.toInt(),
-                                                productImageURL: snapshot.data![index].image.toString(),
-                                                productTitle: snapshot.data![index].title.toString(),
+                                            productImageURL: snapshot.data![index].image.toString(),
+                                            productTitle: snapshot.data![index].title.toString(),
                                             productPrice: snapshot.data![index].price.toString(),
                                             productDescription: snapshot.data![index].description.toString(),
                                             productRating: snapshot.data![index].rating!,

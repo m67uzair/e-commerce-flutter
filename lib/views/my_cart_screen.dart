@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../Controllers/products_controller.dart';
+
+final productsController = ProductsController();
+
 class MyCartScreen extends StatefulWidget {
-  final int productId;
-  final String productTitle;
-  final String productPrice;
-  const MyCartScreen({Key? key, required this.productId, required this.productTitle, required this.productPrice}) : super(key: key);
+  final productsList = productsController.getProductsInCart();
+
+  MyCartScreen({Key? key}) : super(key: key);
 
   @override
   State<MyCartScreen> createState() => _MyCartScreenState();
@@ -28,30 +31,20 @@ class _MyCartScreenState extends State<MyCartScreen> {
             children: [
               const SizedBox(height: 15),
               const Text(
-                "My Bag",
+                "My Cart",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32),
               ),
               const SizedBox(height: 20),
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.55,
-                child: ListView(
-                  children: [
-                    CartProductCard(
-                      productPrice: '51',
-                    ),
-                    const SizedBox(height: 10),
-                    CartProductCard(
-                      productPrice: '',
-                    ),
-                    const SizedBox(height: 10),
-                    CartProductCard(
-                      productPrice: '',
-                    ),
-                    const SizedBox(height: 10),
-                    CartProductCard(
-                      productPrice: '',
-                    ),
-                  ],
+                child: ListView.builder(
+                  itemCount: widget.productsList.length,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  itemBuilder: (context, index) => CartProductCard(
+                      productPrice: widget.productsList[index].price.toString(),
+                      productImageURL: widget.productsList[index].image.toString(),
+                      productTitle: widget.productsList[index].title.toString(),
+                      productId: widget.productsList[index].id!.toInt()),
                 ),
               ),
               const SizedBox(height: 20),
@@ -96,22 +89,27 @@ class _MyCartScreenState extends State<MyCartScreen> {
 }
 
 class CartProductCard extends StatefulWidget {
+  final String productImageURL;
+  final String productTitle;
+  final int productId;
+
   int count = 1;
-   String productPrice;
-   String originalPrice = '';
+  String productPrice;
+  String originalPrice = '';
 
   CartProductCard({
     super.key,
     required this.productPrice,
+    required this.productImageURL,
+    required this.productTitle,
+    required this.productId,
   });
 
   @override
   State<CartProductCard> createState() => _CartProductCardState();
 }
 
-
 class _CartProductCardState extends State<CartProductCard> {
-
   @override
   void initState() {
     widget.originalPrice = widget.productPrice;
@@ -182,16 +180,17 @@ class _CartProductCardState extends State<CartProductCard> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           FloatingActionButton.small(
-
-                              onPressed: widget.count == 1 ? null : () {
-                                setState(() {
-                                  widget.count--;
-                                  widget.productPrice =
-                                      (int.parse(widget.productPrice) - int.parse(widget.originalPrice))
-                                          .toString();
-                                  print(widget.productPrice);
-                                });
-                              },
+                              onPressed: widget.count == 1
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        widget.count--;
+                                        widget.productPrice =
+                                            (int.parse(widget.productPrice) - int.parse(widget.originalPrice))
+                                                .toString();
+                                        print(widget.productPrice);
+                                      });
+                                    },
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.grey,
                               elevation: 3,
@@ -208,11 +207,8 @@ class _CartProductCardState extends State<CartProductCard> {
                                 setState(() {
                                   widget.count++;
                                   widget.productPrice =
-                                      (int.parse(widget.productPrice) + int.parse(widget.originalPrice))
-                                          .toString();
+                                      (int.parse(widget.productPrice) + int.parse(widget.originalPrice)).toString();
                                   print(widget.productPrice);
-
-
                                 });
                               },
                               backgroundColor: Colors.white,

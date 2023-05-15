@@ -52,6 +52,15 @@ class ProductsController {
       return [];
     }
   }
+List<ProductsModel> productsInCart = [];
+  void addProductToCart( ProductsModel product ){
+    productsInCart.add(product);
+    print(productsInCart);
+  }
+
+  List<ProductsModel> getProductsInCart(){
+    return productsInCart;
+  }
 
   Future<ProductsModel> getSingleProductData(int productId) async {
     final response = await http.get(Uri.parse('https://fakestoreapi.com/products/$productId'));
