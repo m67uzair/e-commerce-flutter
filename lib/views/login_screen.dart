@@ -1,9 +1,11 @@
+import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  final VoidCallback onClickLogin;
+
+  const LoginScreen({Key? key, required this.onClickLogin}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -14,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -29,11 +32,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Login", style: TextStyle(fontFamily: "Metropolis", fontWeight: FontWeight.bold,
-                        fontSize: 36)),
+                    child: Text("Login",
+                        style: TextStyle(fontFamily: "Metropolis", fontWeight: FontWeight.bold, fontSize: 36)),
                   ),
                   const SizedBox(height: 73),
-
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Material(
@@ -46,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -93,13 +94,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: ElevatedButton(
-
                         style: ButtonStyle(
                             backgroundColor: const MaterialStatePropertyAll(Color(0xffDB3022)),
                             padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 16)),
                             shape: MaterialStatePropertyAll(
                                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))),
-                        onPressed: () {},
+                        onPressed: () {
+
+                        },
                         child: const Text(
                           "LOGIN",
                           style: TextStyle(fontSize: 17),

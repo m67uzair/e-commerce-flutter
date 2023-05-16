@@ -16,6 +16,7 @@ class MyCartScreen extends StatefulWidget {
 class _MyCartScreenState extends State<MyCartScreen> {
   @override
   Widget build(BuildContext context) {
+    // print(widget.productsList);
     return Scaffold(
       appBar: AppBar(
         // title: const Text("My Cart", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),

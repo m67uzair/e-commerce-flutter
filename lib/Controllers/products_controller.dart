@@ -11,7 +11,6 @@ class ProductsController {
   Future<List<ProductsModel>> getProductsData(String category) async {
     final response = await http.get(Uri.parse('https://fakestoreapi.com/products/category/$category'));
     var data = jsonDecode(response.body.toString());
-    print("data getooo: " + data.toString());
     if (response.statusCode == 200) {
       switch (category) {
         case "men's clothing":
@@ -54,18 +53,19 @@ class ProductsController {
   }
 List<ProductsModel> productsInCart = [];
   void addProductToCart( ProductsModel product ){
-    productsInCart.add(product);
     print(productsInCart);
+
+    productsInCart.add(product);
   }
 
   List<ProductsModel> getProductsInCart(){
+    print(productsInCart);
     return productsInCart;
   }
 
   Future<ProductsModel> getSingleProductData(int productId) async {
     final response = await http.get(Uri.parse('https://fakestoreapi.com/products/$productId'));
     var data = jsonDecode(response.body.toString());
-    print("single product data getoooo : $data");
 
     if (response.statusCode == 200) {
       return ProductsModel.fromJson(data);

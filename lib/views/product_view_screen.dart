@@ -84,7 +84,7 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                         id: widget.productId,
                         title: widget.productId.toString(),
                         image: widget.productImageURL,
-                        price: int.parse(widget.productPrice)));
+                        price: double.parse(widget.productPrice)));
                   },
                   child: const Text(
                     "Add to cart",

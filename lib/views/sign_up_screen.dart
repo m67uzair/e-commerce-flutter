@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  final VoidCallback onClickRegister;
+  const SignUpScreen({Key? key, required this.onClickRegister}) : super(key: key);
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
