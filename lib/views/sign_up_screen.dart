@@ -12,11 +12,10 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController nameController = TextEditingController();
-  TextEditingController mobileController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  bool obscureText = false;
 
   @override
   Widget build(BuildContext context) {
@@ -41,64 +40,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         )),
                   ),
                   const SizedBox(height: 73),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Material(
-                      elevation: 0.8,
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                            label: Text("Full Name", style: TextStyle(color: Colors.grey)),
-                            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-                            border: InputBorder.none),
-                      ),
-                    ),
+                  CustomTextFormField(label: "Full Name", controller: nameController),
+                  const SizedBox(height: 10),
+                  CustomTextFormField(
+                    label: "Phone",
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Material(
-                      elevation: 0.8,
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                            label: Text("Phone", style: TextStyle(color: Colors.grey)),
-                            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-                            border: InputBorder.none),
-                      ),
-                    ),
+                  CustomTextFormField(
+                    label: "Email",
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Material(
-                      elevation: 0.8,
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                            label: Text("Email", style: TextStyle(color: Colors.grey)),
-                            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-                            border: InputBorder.none),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Material(
-                      elevation: 0.8,
-                      child: TextFormField(
-                        obscureText: obscureText,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-                          border: InputBorder.none,
-                          label: const Text("password", style: TextStyle(color: Colors.grey)),
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              obscureText = obscureText ? false : true;
-                            },
-                            icon: obscureText ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
-                          ),
-                        ),
-                      ),
-                    ),
+                  CustomTextFormField(
+                    label: "Password",
+                    controller: passwordController,
+                    isPasswordField: true,
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -119,37 +78,97 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 80),
                   const Text("Or Sign-up with a social account"),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        height: 64,
-                        width: 92,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 0.1, offset: Offset(-1, 1))]),
-                        child: Image.asset('assets/images/google.png'),
-                      ),
+                      SquareTile(imagePath: 'assets/images/google.png', onTap: () {}),
                       const SizedBox(width: 8),
-                      Container(
-                        height: 64,
-                        width: 92,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 0.1, offset: Offset(-1, 1))],
-                        ),
-                        child: Image.asset('assets/images/facebook.png'),
+                      SquareTile(
+                        imagePath: "assets/images/facebook.png",
+                        onTap: () {},
                       )
                     ],
                   )
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SquareTile extends StatelessWidget {
+  final String imagePath;
+  final void Function()? onTap;
+
+  const SquareTile({
+    super.key,
+    required this.imagePath,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 64,
+        width: 92,
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 0.1, offset: Offset(1, 1))]),
+        child: Image.asset(imagePath),
+      ),
+    );
+  }
+}
+
+class CustomTextFormField extends StatefulWidget {
+  final String label;
+  final TextEditingController controller;
+  TextInputType? keyboardType;
+  bool isPasswordField;
+
+  CustomTextFormField(
+      {super.key, required this.label, required this.controller, this.isPasswordField = false, this.keyboardType});
+
+  @override
+  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
+}
+
+class _CustomTextFormFieldState extends State<CustomTextFormField> {
+  bool obscureText = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: Material(
+        elevation: 0.8,
+        child: TextFormField(
+          controller: widget.controller,
+          obscureText: widget.isPasswordField ? obscureText : false,
+          keyboardType: widget.keyboardType,
+          decoration: InputDecoration(
+            label: Text(widget.label, style: const TextStyle(color: Colors.grey)),
+            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+            border: InputBorder.none,
+            suffixIcon: widget.isPasswordField
+                ? IconButton(
+                    onPressed: () {
+                      setState(() {
+                        obscureText = obscureText ? false : true;
+                      });
+                    },
+                    icon: obscureText ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
+                  )
+                : null,
           ),
         ),
       ),
