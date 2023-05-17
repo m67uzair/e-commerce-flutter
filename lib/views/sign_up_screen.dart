@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class SignUpScreen extends StatefulWidget {
   final VoidCallback onClickRegister;
+
   const SignUpScreen({Key? key, required this.onClickRegister}) : super(key: key);
 
   @override
@@ -10,6 +11,11 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  TextEditingController nameController = TextEditingController();
+  TextEditingController mobileController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool obscureText = false;
 
   @override
