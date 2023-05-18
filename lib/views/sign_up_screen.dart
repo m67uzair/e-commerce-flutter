@@ -1,5 +1,12 @@
+import 'package:ecommerce_app_flutter/Widgets/sign_up_and_login_widgets.dart';
+import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
+import 'package:ecommerce_app_flutter/views/login_screen.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:form_validator/form_validator.dart';
+import 'package:provider/provider.dart';
+import 'package:ecommerce_app_flutter/main.dart';
 
 class SignUpScreen extends StatefulWidget {
   final VoidCallback onClickRegister;
@@ -15,19 +22,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
+
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: const Icon(Icons.arrow_back_ios_new_sharp, color: Color(0xff222222)),
-        leadingWidth: 50,
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Form(
+            key: formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: Column(
@@ -39,25 +46,63 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 34),
                         )),
                   ),
-                  const SizedBox(height: 73),
-                  CustomTextFormField(label: "Full Name", controller: nameController),
+                  const SizedBox(height: 40),
+                  CustomTextFormField(
+                      label: "Full Name",
+                      controller: nameController,
+                      validator: ValidationBuilder().required().build()),
                   const SizedBox(height: 10),
                   CustomTextFormField(
                     label: "Phone",
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
+                    validator: ValidationBuilder().phone().required().build(),
                   ),
                   const SizedBox(height: 10),
                   CustomTextFormField(
                     label: "Email",
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    validator: ValidationBuilder().email().required().build(),
                   ),
                   const SizedBox(height: 10),
                   CustomTextFormField(
-                    label: "Password",
-                    controller: passwordController,
-                    isPasswordField: true,
+                      label: "Password",
+                      controller: passwordController,
+                      isPasswordField: true,
+                      validator: ValidationBuilder().minLength(6).required().build()),
+                  CustomTextFormField(
+                      label: "Confirm Password",
+                      controller: confirmPasswordController,
+                      isPasswordField: true,
+                      validator: ValidationBuilder().minLength(6).required().add((value) {
+                        if (value != passwordController.text) {
+                          return "passwords do not match";
+                        }
+                        return null;
+                      }).build()),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: RichText(
+                        text: TextSpan(children: <TextSpan>[
+                          const TextSpan(text: "Joined us before? ", style: TextStyle(color: Colors.black54)),
+                          TextSpan(
+                            text: "Login",
+                            style: const TextStyle(color: Colors.blue),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LoginScreen(onClickLogin: () {}),
+                                    ));
+                              },
+                          )
+                        ]),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -70,7 +115,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 16)),
                             shape: MaterialStatePropertyAll(
                                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))),
-                        onPressed: () {},
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              barrierDismissible: false,
+                            );
+
+                            bool isSignInSuccess = await authProvider.signUpWithEmailAndPassword(
+                                email: emailController.text,
+                                password: passwordController.text,
+                                displayName: nameController.text,
+                                phoneNumber: phoneController.text);
+
+                            if (isSignInSuccess) {
+                              navigatorKey.currentState!.popUntil((route) => route.isFirst);
+                            }
+                          }
+                        },
                         child: const Text(
                           "Sign-up",
                           style: TextStyle(fontSize: 17),
@@ -84,7 +149,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SquareTile(imagePath: 'assets/images/google.png', onTap: () {}),
+                      SquareTile(
+                          imagePath: 'assets/images/google.png',
+                          onTap: () async {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              barrierDismissible: false,
+                            );
+                            bool isSignInSuccess = await authProvider.signInWithGoogle();
+                            if (isSignInSuccess) {
+                              navigatorKey.currentState!.popUntil((route) => route.isFirst);
+                            }
+                          }),
                       const SizedBox(width: 8),
                       SquareTile(
                         imagePath: "assets/images/facebook.png",
@@ -95,80 +174,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SquareTile extends StatelessWidget {
-  final String imagePath;
-  final void Function()? onTap;
-
-  const SquareTile({
-    super.key,
-    required this.imagePath,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        height: 64,
-        width: 92,
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 0.1, offset: Offset(1, 1))]),
-        child: Image.asset(imagePath),
-      ),
-    );
-  }
-}
-
-class CustomTextFormField extends StatefulWidget {
-  final String label;
-  final TextEditingController controller;
-  TextInputType? keyboardType;
-  bool isPasswordField;
-
-  CustomTextFormField(
-      {super.key, required this.label, required this.controller, this.isPasswordField = false, this.keyboardType});
-
-  @override
-  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
-}
-
-class _CustomTextFormFieldState extends State<CustomTextFormField> {
-  bool obscureText = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Material(
-        elevation: 0.8,
-        child: TextFormField(
-          controller: widget.controller,
-          obscureText: widget.isPasswordField ? obscureText : false,
-          keyboardType: widget.keyboardType,
-          decoration: InputDecoration(
-            label: Text(widget.label, style: const TextStyle(color: Colors.grey)),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-            border: InputBorder.none,
-            suffixIcon: widget.isPasswordField
-                ? IconButton(
-                    onPressed: () {
-                      setState(() {
-                        obscureText = obscureText ? false : true;
-                      });
-                    },
-                    icon: obscureText ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
-                  )
-                : null,
           ),
         ),
       ),

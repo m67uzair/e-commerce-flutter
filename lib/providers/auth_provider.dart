@@ -31,7 +31,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> signUpWithEmailAndPassword(
+  Future<bool> signUpWithEmailAndPassword(
       {required String email,
       required String password,
       required String displayName,
@@ -50,15 +50,17 @@ class AuthProvider extends ChangeNotifier {
       await prefs.setString(FirestoreConstants.email, email);
 
       _status = Status.authenticated;
+      return true;
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(msg: e.message ?? e.toString(), backgroundColor: Colors.grey[900]);
 
       _status = Status.authenticateError;
+      return false;
     }
     notifyListeners();
   }
 
-  Future<void> loginWithEmailAndPassword({required String email, required String password}) async {
+  Future<bool> loginWithEmailAndPassword({required String email, required String password}) async {
     try {
       _status = Status.authenticating;
       notifyListeners();
@@ -71,16 +73,17 @@ class AuthProvider extends ChangeNotifier {
       await prefs.setString(FirestoreConstants.displayName, firebaseUser!.displayName.toString());
       await prefs.setString(FirestoreConstants.phoneNumber, firebaseUser!.phoneNumber.toString() ?? "");
       await prefs.setString(FirestoreConstants.email, firebaseUser!.email.toString());
-
       _status = Status.authenticated;
+      return true;
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(msg: e.message ?? e.toString(), backgroundColor: Colors.grey[900]);
       _status = Status.authenticateError;
+      return false;
     }
     notifyListeners();
   }
 
-  Future<void> signInWithGoogle() async {
+  Future<bool> signInWithGoogle() async {
     _status = Status.authenticating;
     notifyListeners();
 
@@ -102,28 +105,30 @@ class AuthProvider extends ChangeNotifier {
 
         _status = Status.authenticated;
         notifyListeners();
-        // return true;
+        return true;
       } else {
         //firebaseUser if condition ends and else starts
         _status = Status.authenticateError;
         notifyListeners();
-        // return false;
+        return false;
       }
     } else {
       // google user if condition ends and else starts
       _status = Status.authenticateCanceled;
       notifyListeners();
-      // return false;
+      return false;
     }
   }
 
-  Future<void> signOut() async {
+  Future<bool> signOut() async {
     _status = Status.uninitialized;
-    await firebaseAuth.signOut();
+    await FirebaseAuth.instance.signOut();
 
     if (googleSignIn.currentUser != null) {
+      print("not null");
       await googleSignIn.disconnect();
       await googleSignIn.signOut();
     }
+    return true;
   }
 }

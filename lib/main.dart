@@ -22,6 +22,8 @@ void main() async {
   runApp(ECommerceApp(prefs: prefs));
 }
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class ECommerceApp extends StatelessWidget {
   final SharedPreferences prefs;
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
@@ -38,8 +40,10 @@ class ECommerceApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: "E-commerce App flutter",
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         home: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
