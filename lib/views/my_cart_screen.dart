@@ -62,21 +62,23 @@ class _MyCartScreenState extends State<MyCartScreen> {
                   )
                 ],
               ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor: const MaterialStatePropertyAll(Color(0xffDB3022)),
-                        padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 16)),
-                        shape:
-                            MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))),
-                    onPressed: () {},
-                    child: const Text(
-                      "CHECKOUT",
-                      style: TextStyle(fontSize: 17),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor: const MaterialStatePropertyAll(Color(0xffDB3022)),
+                          padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 16)),
+                          shape:
+                              MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))),
+                      onPressed: () {},
+                      child: const Text(
+                        "CHECKOUT",
+                        style: TextStyle(fontSize: 17),
+                      ),
                     ),
                   ),
                 ),

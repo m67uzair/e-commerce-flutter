@@ -21,10 +21,10 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider({required this.googleSignIn, required this.firebaseAuth, required this.prefs});
 
-  String? getFirebaseUserId() => prefs.getString(FirestoreConstants.id);
+  String? getFirebaseUserId() => prefs.getString(FirestoreConstants.userId);
 
   Future<bool> isLoggedIn() async {
-    if (firebaseUser != null && prefs.getString(FirestoreConstants.id)!.isNotEmpty) {
+    if (firebaseUser != null && prefs.getString(FirestoreConstants.userId)!.isNotEmpty) {
       return true;
     } else {
       return false;
@@ -44,7 +44,7 @@ class AuthProvider extends ChangeNotifier {
 
       await firebaseUser!.updateDisplayName(displayName);
 
-      await prefs.setString(FirestoreConstants.id, firebaseUser!.uid);
+      await prefs.setString(FirestoreConstants.userId, firebaseUser!.uid);
       await prefs.setString(FirestoreConstants.displayName, displayName);
       await prefs.setString(FirestoreConstants.phoneNumber, phoneNumber ?? "");
       await prefs.setString(FirestoreConstants.email, email);
@@ -69,7 +69,7 @@ class AuthProvider extends ChangeNotifier {
 
       firebaseUser = firebaseAuth.currentUser;
 
-      await prefs.setString(FirestoreConstants.id, firebaseUser!.uid);
+      await prefs.setString(FirestoreConstants.userId, firebaseUser!.uid);
       await prefs.setString(FirestoreConstants.displayName, firebaseUser!.displayName.toString());
       await prefs.setString(FirestoreConstants.phoneNumber, firebaseUser!.phoneNumber.toString() ?? "");
       await prefs.setString(FirestoreConstants.email, firebaseUser!.email.toString());
@@ -97,7 +97,7 @@ class AuthProvider extends ChangeNotifier {
       firebaseUser = (await firebaseAuth.signInWithCredential(credential)).user;
 
       if (firebaseUser != null) {
-        await prefs.setString(FirestoreConstants.id, firebaseUser!.uid);
+        await prefs.setString(FirestoreConstants.userId, firebaseUser!.uid);
         await prefs.setString(FirestoreConstants.displayName, firebaseUser!.displayName.toString());
         await prefs.setString(FirestoreConstants.photoUrl, firebaseUser!.photoURL.toString() ?? "");
         await prefs.setString(FirestoreConstants.phoneNumber, firebaseUser!.phoneNumber.toString() ?? "");

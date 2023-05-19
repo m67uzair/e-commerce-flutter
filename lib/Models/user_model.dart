@@ -23,7 +23,7 @@ class UserModel {
       aboutMe: email ?? aboutMe);
 
   Map<String, dynamic> toJson() => {
-        FirestoreConstants.id: id,
+        FirestoreConstants.userId: id,
         FirestoreConstants.displayName: displayName,
         FirestoreConstants.photoUrl: photoURL,
         FirestoreConstants.phoneNumber: phoneNumber,
@@ -38,7 +38,7 @@ class UserModel {
     String aboutMe = "";
 
     try {
-      id = snapshot.data().toString().contains(FirestoreConstants.id) ? snapshot.get(FirestoreConstants.id) ?? "" : "";
+      id = snapshot.data().toString().contains(FirestoreConstants.userId) ? snapshot.get(FirestoreConstants.userId) ?? "" : "";
       photoURL = snapshot.data().toString().contains(FirestoreConstants.photoUrl)
           ? snapshot.get(FirestoreConstants.photoUrl) ?? ""
           : "";

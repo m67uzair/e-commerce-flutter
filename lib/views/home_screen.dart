@@ -91,6 +91,7 @@ class ProductList extends StatefulWidget {
 class _ProductListState extends State<ProductList> {
   @override
   Widget build(BuildContext context) {
+  productsApi.getProductsData("men's clothing");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(children: [
