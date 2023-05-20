@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import '../Controllers/products_controller.dart';
 
 final productsController = ProductsController();
+late CartController cartProvider;
+late AuthProvider authProvider;
 
 class MyCartScreen extends StatefulWidget {
   const MyCartScreen({Key? key}) : super(key: key);
@@ -18,9 +20,6 @@ class MyCartScreen extends StatefulWidget {
 
 class _MyCartScreenState extends State<MyCartScreen> {
   List productsList = [];
-
-  late CartController cartProvider;
-  late AuthProvider authProvider;
 
   @override
   void initState() {
@@ -130,7 +129,7 @@ class CartProductCard extends StatefulWidget {
   final String productTitle;
   final int productId;
 
-  int count = 1;
+  late int count;
   String productPrice;
   String originalPrice = '';
 
@@ -150,7 +149,12 @@ class _CartProductCardState extends State<CartProductCard> {
   @override
   void initState() {
     widget.originalPrice = widget.productPrice;
+    getCount();
     super.initState();
+  }
+
+  void getCount() async {
+    widget.count = await cartProvider.getProductCount(authProvider.loggedInUserId.toString(), widget.productId);
   }
 
   @override
@@ -219,48 +223,52 @@ class _CartProductCardState extends State<CartProductCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FloatingActionButton.small(
-                                onPressed: widget.count == 1
-                                    ? null
-                                    : () {
-                                        setState(() {
+                        Consumer<CartController>(
+                          builder: (context, cartObject, child) => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FloatingActionButton.small(
+                                  heroTag: "decreaseBtn",
+                                  onPressed: widget.count == 1
+                                      ? null
+                                      : () async {
                                           widget.count--;
                                           widget.productPrice =
-                                              (double.parse(widget.productPrice) - double.parse(widget
-                                                  .originalPrice))
+                                              (double.parse(widget.productPrice) - double.parse(widget.originalPrice))
                                                   .toString();
                                           print(widget.productPrice);
-                                        });
-                                      },
-                                backgroundColor: Colors.white,
-                                foregroundColor: Colors.grey,
-                                elevation: 3,
-                                child: const Icon(Icons.remove)),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
-                              child: Text(
-                                "${widget.count}",
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                                          await cartObject.updateProductCount(
+                                              authProvider.loggedInUserId.toString(), widget.productId, widget.count);
+                                        },
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.grey,
+                                  elevation: 3,
+                                  child: const Icon(Icons.remove)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                child: Text(
+                                  "${widget.count}",
+                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                                ),
                               ),
-                            ),
-                            FloatingActionButton.small(
-                                onPressed: () {
-                                  setState(() {
+                              FloatingActionButton.small(
+                                  heroTag: "increaseBtn",
+                                  onPressed: () async {
                                     widget.count++;
+                                    print("count: " + widget.count.toString());
                                     widget.productPrice =
                                         (double.parse(widget.productPrice) + double.parse(widget.originalPrice))
                                             .toString();
-                                    print(widget.productPrice);
-                                  });
-                                },
-                                backgroundColor: Colors.white,
-                                foregroundColor: Colors.grey,
-                                elevation: 3,
-                                child: const Icon(Icons.add)),
-                          ],
+                                    print("count price:" + widget.productPrice);
+                                    await cartObject.updateProductCount(
+                                        authProvider.loggedInUserId.toString(), widget.productId, widget.count);
+                                  },
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.grey,
+                                  elevation: 3,
+                                  child: const Icon(Icons.add)),
+                            ],
+                          ),
                         ),
                         Text("${widget.productPrice}\$",
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),

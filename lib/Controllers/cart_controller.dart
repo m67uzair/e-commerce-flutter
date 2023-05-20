@@ -39,4 +39,40 @@ class CartController extends ChangeNotifier {
         .limit(limit)
         .snapshots();
   }
+
+  Future<bool> isProductAlreadyInCart(int productId, String userId) async {
+    final DocumentSnapshot documentSnapshot = await firebaseFirestore
+        .collection(FirestoreConstants.pathCartCollection)
+        .doc(userId)
+        .collection(userId)
+        .doc(productId.toString())
+        .get();
+
+    return documentSnapshot.exists;
+  }
+
+  Future<void> updateProductCount(String userId, int productId, int count) async {
+    notifyListeners();
+    await firebaseFirestore
+        .collection(FirestoreConstants.pathCartCollection)
+        .doc(userId)
+        .collection(userId)
+        .doc(productId.toString())
+        .update({"count": count});
+
+  }
+
+  Future<int> getProductCount(String userId, int productId) async {
+    final DocumentSnapshot documentSnapshot = await firebaseFirestore
+        .collection(FirestoreConstants.pathCartCollection)
+        .doc(userId)
+        .collection(userId)
+        .doc(productId.toString())
+        .get();
+    if (documentSnapshot.exists) {
+      final data = documentSnapshot.get(FirestoreConstants.count);
+      return data;
+    }
+    return -1;
+  }
 }

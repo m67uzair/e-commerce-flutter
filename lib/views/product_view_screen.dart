@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:ecommerce_app_flutter/Controllers/cart_controller.dart';
 import 'package:ecommerce_app_flutter/Models/products_model.dart';
 import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
-import 'package:ecommerce_app_flutter/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -37,11 +37,14 @@ class ProductViewScreen extends StatefulWidget {
 class _ProductViewScreenState extends State<ProductViewScreen> {
   late CartController cartProvider;
   late AuthProvider authProvider;
+  late String loggedInUserId;
+
   List<XFile>? images = [];
 
   @override
   void initState() {
     authProvider = context.read<AuthProvider>();
+    loggedInUserId = authProvider.loggedInUserId.toString();
     super.initState();
   }
 
@@ -90,9 +93,16 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                       backgroundColor: const MaterialStatePropertyAll(Color(0xffDB3022)),
                       padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 10, horizontal: 16)),
                       shape: MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)))),
-                  onPressed: () {
-                    cartProvider.addProductToCart(authProvider.loggedInUserId.toString(), widget.productId,
-                        widget.productTitle, widget.productImageURL, widget.productPrice);
+                  onPressed: () async {
+                    if (await cartProvider.isProductAlreadyInCart(widget.productId, loggedInUserId)) {
+                      Fluttertoast.showToast(
+                          msg: "Product is already in cart", timeInSecForIosWeb: 3, backgroundColor: Colors.black);
+                    } else {
+                      await cartProvider.addProductToCart(loggedInUserId, widget.productId, widget.productTitle,
+                          widget.productImageURL, widget.productPrice);
+                      Fluttertoast.showToast(
+                          msg: "Product added to cart", timeInSecForIosWeb: 3, backgroundColor: Colors.black);
+                    }
                   },
                   child: const Text(
                     "Add to cart",
