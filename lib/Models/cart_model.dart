@@ -32,23 +32,24 @@ class CartModel {
   }
 
   factory CartModel.fromDocument(DocumentSnapshot documentSnapshot) {
+    print("docu" + documentSnapshot.data().toString());
     String userId = documentSnapshot.data().toString().contains(FirestoreConstants.userId)
         ? documentSnapshot.get(FirestoreConstants.userId)
         : "";
     int productId = documentSnapshot.data().toString().contains(FirestoreConstants.productId)
-        ? int.parse(documentSnapshot.get(FirestoreConstants.productId))
+        ? documentSnapshot.get(FirestoreConstants.productId)
         : 0;
     String productTitle = documentSnapshot.data().toString().contains(FirestoreConstants.productTitle)
         ? documentSnapshot.get(FirestoreConstants.productTitle)
         : "";
     double productPrice = documentSnapshot.data().toString().contains(FirestoreConstants.productPrice)
-        ? double.parse(documentSnapshot.get(FirestoreConstants.productPrice))
+        ? documentSnapshot.get(FirestoreConstants.productPrice)
         : 0.0;
     String productImageURL = documentSnapshot.data().toString().contains(FirestoreConstants.productImageURL)
         ? documentSnapshot.get(FirestoreConstants.productImageURL)
         : "";
     int count = documentSnapshot.data().toString().contains(FirestoreConstants.count)
-        ? int.parse(documentSnapshot.get(FirestoreConstants.count))
+        ? documentSnapshot.get(FirestoreConstants.count)
         : 0;
     String timestamp = documentSnapshot.data().toString().contains(FirestoreConstants.timestamp)
         ? documentSnapshot.get(FirestoreConstants.timestamp)

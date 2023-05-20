@@ -1,9 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:ecommerce_app_flutter/views/favorites_screen.dart';
-import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
 import 'package:ecommerce_app_flutter/views/product_view_screen.dart';
-import 'package:ecommerce_app_flutter/views/profile_screen.dart';
-import 'package:ecommerce_app_flutter/views/shop_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -20,8 +16,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +76,7 @@ class ProductList extends StatefulWidget {
   final String productsListTitle;
   final Function onViewAllPressed;
 
-  ProductList({required this.productsListTitle, required this.onViewAllPressed});
+  const ProductList({super.key, required this.productsListTitle, required this.onViewAllPressed});
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -91,7 +85,6 @@ class ProductList extends StatefulWidget {
 class _ProductListState extends State<ProductList> {
   @override
   Widget build(BuildContext context) {
-  productsApi.getProductsData("men's clothing");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(children: [
@@ -130,7 +123,7 @@ class _ProductListState extends State<ProductList> {
                                             productId: snapshot.data![index].id!.toInt(),
                                             productImageURL: snapshot.data![index].image.toString(),
                                             productTitle: snapshot.data![index].title.toString(),
-                                            productPrice: snapshot.data![index].price.toString(),
+                                            productPrice: snapshot.data![index].price!.toDouble(),
                                             productDescription: snapshot.data![index].description.toString(),
                                             productRating: snapshot.data![index].rating!,
                                           )));
@@ -206,7 +199,7 @@ class ProductCard extends StatelessWidget {
                               color: Colors.amber,
                             ),
                         onRatingUpdate: (rating) {
-                          print(rating);
+                          // print(rating);
                         }),
                     const SizedBox(width: 5),
                     Text('($productRatingCount)')

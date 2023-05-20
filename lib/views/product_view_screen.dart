@@ -1,12 +1,14 @@
 import 'dart:io';
 
+import 'package:ecommerce_app_flutter/Controllers/cart_controller.dart';
 import 'package:ecommerce_app_flutter/Models/products_model.dart';
+import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
 import 'package:ecommerce_app_flutter/views/home_screen.dart';
-import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 final productsModel = ProductsModel();
 
@@ -14,7 +16,7 @@ class ProductViewScreen extends StatefulWidget {
   final int productId;
   final String productTitle;
   final String productImageURL;
-  final String productPrice;
+  final double productPrice;
   final String productDescription;
   final Rating productRating;
 
@@ -33,10 +35,19 @@ class ProductViewScreen extends StatefulWidget {
 }
 
 class _ProductViewScreenState extends State<ProductViewScreen> {
+  late CartController cartProvider;
+  late AuthProvider authProvider;
   List<XFile>? images = [];
 
   @override
+  void initState() {
+    authProvider = context.read<AuthProvider>();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    cartProvider = Provider.of<CartController>(context);
     return Scaffold(
       appBar: AppBar(
         elevation: 1,
@@ -80,11 +91,8 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                       padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 10, horizontal: 16)),
                       shape: MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)))),
                   onPressed: () {
-                    productsApi.addProductToCart(productsModel.copyWith(
-                        id: widget.productId,
-                        title: widget.productId.toString(),
-                        image: widget.productImageURL,
-                        price: double.parse(widget.productPrice)));
+                    cartProvider.addProductToCart(authProvider.loggedInUserId.toString(), widget.productId,
+                        widget.productTitle, widget.productImageURL, widget.productPrice);
                   },
                   child: const Text(
                     "Add to cart",
@@ -258,11 +266,11 @@ class ReviewModelSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StatefulBuilder(
-      builder: (BuildContext context, void Function(void Function()) setModalState) => Container(
+      builder: (BuildContext context, void Function(void Function()) setModalState) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.80,
         child: Column(
           children: [
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             const Text("Write a review",
                 style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
             const SizedBox(height: 10),
@@ -382,9 +390,9 @@ class UserReview extends StatelessWidget {
         ),
         const SizedBox(height: 15),
         const Text(
-          "lorem ipsum dorm totem idk lorem ipsum dorem totem"
-          "idklorem ipsum dorem totem idk lorem ipsum dorem "
-          "totem idk lorem ipsum dorem totem idk",
+          "lorem ipsum dorm totem idk lorem ipsum dorm totem"
+          "idk lorem ipsum dorm totem idk lorem ipsum dorm "
+          "totem idk lorem ipsum dorm totem idk",
           style: TextStyle(color: Color(0xFF222222), fontSize: 16),
         )
       ],
