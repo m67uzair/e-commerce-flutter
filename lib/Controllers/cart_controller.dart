@@ -2,13 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app_flutter/Models/cart_model.dart';
 import 'package:ecommerce_app_flutter/constants/firestore_constants.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CartController extends ChangeNotifier {
   final SharedPreferences prefs;
   final FirebaseFirestore firebaseFirestore;
+  double _cartTotalPrice = 0.0;
+  bool _isLoading = false;
+
+  bool get isLoading => _isLoading;
 
   CartController({required this.prefs, required this.firebaseFirestore});
+
+  double get cartTotalPrice => _cartTotalPrice;
 
   Future<void> addProductToCart(
       String userId, int productId, String productTitle, String productImageURL, double productPrice) async {
@@ -22,12 +29,24 @@ class CartController extends ChangeNotifier {
       timestamp: DateTime.now().microsecondsSinceEpoch.toString(),
     );
 
-    await firebaseFirestore
-        .collection(FirestoreConstants.pathCartCollection)
-        .doc(userId)
-        .collection(userId)
-        .doc(productId.toString())
-        .set(product.toJson());
+    try {
+      await firebaseFirestore
+          .collection(FirestoreConstants.pathCartCollection)
+          .doc(userId)
+          .collection(userId)
+          .doc(productId.toString())
+          .set(product.toJson());
+
+      _cartTotalPrice += productPrice;
+
+      await firebaseFirestore
+          .collection(FirestoreConstants.pathCartCollection)
+          .doc(userId)
+          .set({FirestoreConstants.cartTotalPrice: cartTotalPrice}, SetOptions(merge: true));
+    } on Exception catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
+    }
+    notifyListeners();
   }
 
   Stream<QuerySnapshot> getProductsInCart(String userId, int limit) {
@@ -51,28 +70,29 @@ class CartController extends ChangeNotifier {
     return documentSnapshot.exists;
   }
 
-  Future<void> updateProductCount(String userId, int productId, int count) async {
+  Future<void> updateCartProductCountAndPrice(String userId, int productId, int count, double price) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await firebaseFirestore
+          .collection(FirestoreConstants.pathCartCollection)
+          .doc(userId)
+          .collection(userId)
+          .doc(productId.toString())
+          .update({FirestoreConstants.count: count, FirestoreConstants.productPrice: price});
+    } on Exception catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
+    }
+    _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> updateCartTotalPrice(String userId, double priceAddition) async {
+    _cartTotalPrice += priceAddition;
     await firebaseFirestore
         .collection(FirestoreConstants.pathCartCollection)
         .doc(userId)
-        .collection(userId)
-        .doc(productId.toString())
-        .update({"count": count});
-
-  }
-
-  Future<int> getProductCount(String userId, int productId) async {
-    final DocumentSnapshot documentSnapshot = await firebaseFirestore
-        .collection(FirestoreConstants.pathCartCollection)
-        .doc(userId)
-        .collection(userId)
-        .doc(productId.toString())
-        .get();
-    if (documentSnapshot.exists) {
-      final data = documentSnapshot.get(FirestoreConstants.count);
-      return data;
-    }
-    return -1;
+        .update({FirestoreConstants.cartTotalPrice: cartTotalPrice});
   }
 }

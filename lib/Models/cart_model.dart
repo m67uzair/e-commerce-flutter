@@ -32,7 +32,7 @@ class CartModel {
   }
 
   factory CartModel.fromDocument(DocumentSnapshot documentSnapshot) {
-    print("docu" + documentSnapshot.data().toString());
+
     String userId = documentSnapshot.data().toString().contains(FirestoreConstants.userId)
         ? documentSnapshot.get(FirestoreConstants.userId)
         : "";

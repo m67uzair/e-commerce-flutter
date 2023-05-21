@@ -23,14 +23,13 @@ class _MyCartScreenState extends State<MyCartScreen> {
 
   @override
   void initState() {
-    cartProvider = context.read<CartController>();
+    cartProvider = Provider.of<CartController>(context, listen: false);
     authProvider = context.read<AuthProvider>();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // print(widget.productsList);
     return Scaffold(
       appBar: AppBar(
         // title: const Text("My Cart", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
@@ -57,22 +56,27 @@ class _MyCartScreenState extends State<MyCartScreen> {
                       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.hasData) {
                           productsList = snapshot.data!.docs;
-
                           if (productsList.isNotEmpty) {
                             return ListView.builder(
                                 itemCount: snapshot.data!.docs.length,
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 itemBuilder: (context, index) {
+                                  print("index: $index");
                                   CartModel cartModel = CartModel.fromDocument(snapshot.data!.docs[index]);
                                   return CartProductCard(
-                                      productPrice: cartModel.productPrice.toString(),
+                                      productPrice: cartModel.productPrice,
                                       productImageURL: cartModel.productImageURL,
                                       productTitle: cartModel.productTitle,
-                                      productId: cartModel.productId);
+                                      productId: cartModel.productId,
+                                      count: cartModel.count);
                                 });
                           } else {
-                            return const Center(
-                              child: Text("Nothing in cart yet.."),
+                            showDialog(
+                              context: context,
+                              builder: (context) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              barrierDismissible: false,
                             );
                           }
                         } else {
@@ -84,14 +88,16 @@ class _MyCartScreenState extends State<MyCartScreen> {
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     "Total Amount",
                     style: TextStyle(color: Colors.grey, fontSize: 18, fontWeight: FontWeight.w500),
                   ),
-                  Text(
-                    "153\$",
-                    style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
+                  Consumer<CartController>(
+                    builder: (context, value, child) => Text(
+                      "${value.cartTotalPrice.toStringAsFixed(2)}\$",
+                      style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
+                    ),
                   )
                 ],
               ),
@@ -128,10 +134,8 @@ class CartProductCard extends StatefulWidget {
   final String productImageURL;
   final String productTitle;
   final int productId;
-
-  late int count;
-  String productPrice;
-  String originalPrice = '';
+  final int count;
+  double productPrice;
 
   CartProductCard({
     super.key,
@@ -139,6 +143,7 @@ class CartProductCard extends StatefulWidget {
     required this.productImageURL,
     required this.productTitle,
     required this.productId,
+    required this.count,
   });
 
   @override
@@ -148,13 +153,7 @@ class CartProductCard extends StatefulWidget {
 class _CartProductCardState extends State<CartProductCard> {
   @override
   void initState() {
-    widget.originalPrice = widget.productPrice;
-    getCount();
     super.initState();
-  }
-
-  void getCount() async {
-    widget.count = await cartProvider.getProductCount(authProvider.loggedInUserId.toString(), widget.productId);
   }
 
   @override
@@ -228,17 +227,25 @@ class _CartProductCardState extends State<CartProductCard> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               FloatingActionButton.small(
-                                  heroTag: "decreaseBtn",
+                                  heroTag: "decreaseBtn${widget.count}",
                                   onPressed: widget.count == 1
                                       ? null
                                       : () async {
-                                          widget.count--;
-                                          widget.productPrice =
-                                              (double.parse(widget.productPrice) - double.parse(widget.originalPrice))
-                                                  .toString();
-                                          print(widget.productPrice);
-                                          await cartObject.updateProductCount(
-                                              authProvider.loggedInUserId.toString(), widget.productId, widget.count);
+                                          if (cartObject.isLoading) {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) => const Center(
+                                                child: CircularProgressIndicator(),
+                                              ),
+                                              barrierDismissible: false,
+                                            );
+                                          }
+                                          widget.productPrice -= widget.productPrice / widget.count;
+                                          await cartObject.updateCartProductCountAndPrice(
+                                              authProvider.loggedInUserId.toString(),
+                                              widget.productId,
+                                              widget.count - 1,
+                                              widget.productPrice);
                                         },
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.grey,
@@ -252,16 +259,23 @@ class _CartProductCardState extends State<CartProductCard> {
                                 ),
                               ),
                               FloatingActionButton.small(
-                                  heroTag: "increaseBtn",
+                                  heroTag: "increaseBtn${widget.count}",
                                   onPressed: () async {
-                                    widget.count++;
-                                    print("count: " + widget.count.toString());
-                                    widget.productPrice =
-                                        (double.parse(widget.productPrice) + double.parse(widget.originalPrice))
-                                            .toString();
-                                    print("count price:" + widget.productPrice);
-                                    await cartObject.updateProductCount(
-                                        authProvider.loggedInUserId.toString(), widget.productId, widget.count);
+                                    if (cartObject.isLoading) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                        barrierDismissible: false,
+                                      );
+                                    }
+                                    widget.productPrice += widget.productPrice / widget.count;
+                                    await cartObject.updateCartProductCountAndPrice(
+                                        authProvider.loggedInUserId.toString(),
+                                        widget.productId,
+                                        widget.count + 1,
+                                        widget.productPrice);
                                   },
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.grey,
@@ -270,7 +284,7 @@ class _CartProductCardState extends State<CartProductCard> {
                             ],
                           ),
                         ),
-                        Text("${widget.productPrice}\$",
+                        Text("${widget.productPrice.toStringAsFixed(2)}\$",
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
                       ],
                     )

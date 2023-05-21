@@ -9,11 +9,10 @@ class ProductsController {
   List<ProductsModel> jeweleryProductsList = [];
 
   Future<List<ProductsModel>> getProductsData(String category) async {
-    print("data get prev");
     // final response = await http.get(Uri.parse("https://fakestoreapi.com/products/category/men's clothing"));
     final response = await http.get(Uri.parse("https://fakestoreapi.com/products/category/$category"));
     var data = jsonDecode(response.body.toString());
-    print("data getooooo" + data.toString());
+
     if (response.statusCode == 200) {
       switch (category) {
         case "men's clothing":
@@ -46,7 +45,6 @@ class ProductsController {
             for (Map i in data) {
               electronicsProductsList.add(ProductsModel.fromJson(i));
             }
-            print("products List: " + electronicsProductsList.toString());
             return electronicsProductsList;
           }
       }

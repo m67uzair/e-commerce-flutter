@@ -9,6 +9,7 @@ class FirestoreConstants {
   static const phoneNumber = "phoneNumber";
   static const timestamp = "timestamp";
 
+  static const cartTotalPrice = "cartTotalPrice";
   static const productId = "productId";
   static const count = "count";
   static const productImageURL = "productImageURL";
