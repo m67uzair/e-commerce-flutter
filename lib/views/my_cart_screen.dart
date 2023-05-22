@@ -10,6 +10,7 @@ import '../Controllers/products_controller.dart';
 final productsController = ProductsController();
 late CartController cartProvider;
 late AuthProvider authProvider;
+double updatedPrice = 0.0;
 
 class MyCartScreen extends StatefulWidget {
   const MyCartScreen({Key? key}) : super(key: key);
@@ -25,14 +26,21 @@ class _MyCartScreenState extends State<MyCartScreen> {
   void initState() {
     cartProvider = Provider.of<CartController>(context, listen: false);
     authProvider = context.read<AuthProvider>();
+    getCartTotalPrice();
     super.initState();
+  }
+
+  getCartTotalPrice() async {
+    await cartProvider.getCartTotalPrice();
   }
 
   @override
   Widget build(BuildContext context) {
+    print("build called");
     return Scaffold(
       appBar: AppBar(
-        // title: const Text("My Cart", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        title: const Text("My Cart", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.black)),
+        backgroundColor: Colors.white70,
         actions: const [
           Icon(Icons.search, color: Colors.black),
         ],
@@ -44,11 +52,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 15),
-              const Text(
-                "My Cart",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32),
-              ),
-              const SizedBox(height: 20),
+              // const SizedBox(height: 20),
               SizedBox(
                   height: MediaQuery.of(context).size.height * 0.55,
                   child: StreamBuilder<QuerySnapshot>(
@@ -71,35 +75,35 @@ class _MyCartScreenState extends State<MyCartScreen> {
                                       count: cartModel.count);
                                 });
                           } else {
-                            showDialog(
-                              context: context,
-                              builder: (context) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                              barrierDismissible: false,
-                            );
+                            return const Center(child: Text("No products in cart yet"));
                           }
                         } else {
-                          return const CircularProgressIndicator(
-                            color: Colors.redAccent,
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.redAccent,
+                            ),
                           );
                         }
                       })),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Total Amount",
-                    style: TextStyle(color: Colors.grey, fontSize: 18, fontWeight: FontWeight.w500),
-                  ),
-                  Consumer<CartController>(
-                    builder: (context, value, child) => Text(
-                      "${value.cartTotalPrice.toStringAsFixed(2)}\$",
-                      style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Total Amount",
+                      style: TextStyle(color: Colors.grey, fontSize: 18, fontWeight: FontWeight.w500),
                     ),
-                  )
-                ],
+                    Consumer<CartController>(
+                      builder: (context, value, child) => value.isLoading
+                          ? const Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator()))
+                          : Text(
+                              "${value.cartTotalPrice.toStringAsFixed(2)}\$",
+                              style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
+                            ),
+                    )
+                  ],
+                ),
               ),
               Align(
                 alignment: Alignment.bottomCenter,
@@ -223,66 +227,68 @@ class _CartProductCardState extends State<CartProductCard> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Consumer<CartController>(
-                          builder: (context, cartObject, child) => Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FloatingActionButton.small(
-                                  heroTag: "decreaseBtn${widget.count}",
-                                  onPressed: widget.count == 1
-                                      ? null
-                                      : () async {
-                                          if (cartObject.isLoading) {
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) => const Center(
-                                                child: CircularProgressIndicator(),
-                                              ),
-                                              barrierDismissible: false,
-                                            );
-                                          }
-                                          widget.productPrice -= widget.productPrice / widget.count;
-                                          await cartObject.updateCartProductCountAndPrice(
+                          builder: (context, cartObject, child) => cartObject.isLoading
+                              ? const Center(
+                                  child: SizedBox(
+                                    height: 50,
+                                    width: 100,
+                                    child: Center(child: CircularProgressIndicator()),
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    FloatingActionButton.small(
+                                        heroTag: "decreaseBtn${widget.count}",
+                                        onPressed: widget.count == 1
+                                            ? null
+                                            : () async {
+                                                updatedPrice = (widget.productPrice / widget.count);
+
+                                                widget.productPrice -= updatedPrice;
+
+                                                await cartProvider.setCartTotalPrice(-updatedPrice);
+
+                                                // print(-(widget.productPrice/widget.count));
+
+                                                await cartProvider.updateCartProductCountAndPrice(
+                                                    authProvider.loggedInUserId.toString(),
+                                                    widget.productId,
+                                                    widget.count - 1,
+                                                    widget.productPrice);
+                                              },
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.grey,
+                                        elevation: 3,
+                                        child: const Icon(Icons.remove)),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                                      child: Text(
+                                        "${widget.count}",
+                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                    FloatingActionButton.small(
+                                        heroTag: "increaseBtn${widget.count}",
+                                        onPressed: () async {
+                                          updatedPrice = (widget.productPrice / widget.count);
+
+                                          widget.productPrice += updatedPrice;
+
+                                          await cartProvider.setCartTotalPrice(updatedPrice);
+
+                                          await cartProvider.updateCartProductCountAndPrice(
                                               authProvider.loggedInUserId.toString(),
                                               widget.productId,
-                                              widget.count - 1,
+                                              widget.count + 1,
                                               widget.productPrice);
                                         },
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.grey,
-                                  elevation: 3,
-                                  child: const Icon(Icons.remove)),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 6),
-                                child: Text(
-                                  "${widget.count}",
-                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.grey,
+                                        elevation: 3,
+                                        child: const Icon(Icons.add)),
+                                  ],
                                 ),
-                              ),
-                              FloatingActionButton.small(
-                                  heroTag: "increaseBtn${widget.count}",
-                                  onPressed: () async {
-                                    if (cartObject.isLoading) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => const Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                        barrierDismissible: false,
-                                      );
-                                    }
-                                    widget.productPrice += widget.productPrice / widget.count;
-                                    await cartObject.updateCartProductCountAndPrice(
-                                        authProvider.loggedInUserId.toString(),
-                                        widget.productId,
-                                        widget.count + 1,
-                                        widget.productPrice);
-                                  },
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.grey,
-                                  elevation: 3,
-                                  child: const Icon(Icons.add)),
-                            ],
-                          ),
                         ),
                         Text("${widget.productPrice.toStringAsFixed(2)}\$",
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),

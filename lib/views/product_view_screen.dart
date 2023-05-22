@@ -100,6 +100,7 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                     } else {
                       await cartProvider.addProductToCart(loggedInUserId, widget.productId, widget.productTitle,
                           widget.productImageURL, widget.productPrice);
+                      cartProvider.setCartTotalPrice(widget.productPrice);
                       Fluttertoast.showToast(
                           msg: "Product added to cart", timeInSecForIosWeb: 3, backgroundColor: Colors.black);
                     }

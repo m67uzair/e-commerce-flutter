@@ -39,8 +39,8 @@ class ECommerceApp extends StatelessWidget {
             create: (_) =>
                 AuthProvider(googleSignIn: GoogleSignIn(), firebaseAuth: FirebaseAuth.instance, prefs: prefs)),
         ChangeNotifierProvider<CartController>(
-          create: (_) => CartController(prefs: prefs, firebaseFirestore: firebaseFirestore),
-        )
+            create: (_) =>
+                CartController(prefs: prefs, firebaseFirestore: firebaseFirestore, firebaseAuth: FirebaseAuth.instance))
       ],
       child: MaterialApp(
         title: "E-commerce App flutter",

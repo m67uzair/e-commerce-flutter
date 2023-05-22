@@ -1,21 +1,51 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app_flutter/Models/cart_model.dart';
 import 'package:ecommerce_app_flutter/constants/firestore_constants.dart';
+import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
+import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CartController extends ChangeNotifier {
   final SharedPreferences prefs;
   final FirebaseFirestore firebaseFirestore;
+  final FirebaseAuth firebaseAuth;
   double _cartTotalPrice = 0.0;
   bool _isLoading = false;
 
   bool get isLoading => _isLoading;
 
-  CartController({required this.prefs, required this.firebaseFirestore});
+  CartController({required this.prefs, required this.firebaseFirestore, required this.firebaseAuth});
 
   double get cartTotalPrice => _cartTotalPrice;
+
+  Future<double> getCartTotalPrice() async {
+    // _isLoading = true;
+    // notifyListeners();
+    _cartTotalPrice = (await firebaseFirestore
+            .collection(FirestoreConstants.pathCartCollection)
+            .doc(authProvider.loggedInUserId)
+            .get())
+        .data()![FirestoreConstants.cartTotalPrice];
+    // _isLoading = false;
+    notifyListeners();
+    return _cartTotalPrice;
+  }
+
+  Future<void> setCartTotalPrice(double productPrice) async {
+    _cartTotalPrice += productPrice;
+
+    print("total price: " + _cartTotalPrice.toString() + "added priice" + productPrice.toString());
+
+    await prefs.setDouble(FirestoreConstants.cartTotalPrice, double.parse(_cartTotalPrice.toStringAsFixed(2)));
+    notifyListeners();
+
+    await firebaseFirestore.collection(FirestoreConstants.pathCartCollection).doc(firebaseAuth.currentUser!.uid).set(
+        {FirestoreConstants.cartTotalPrice: double.parse(_cartTotalPrice.toStringAsFixed(2))}, SetOptions(merge: true));
+  }
 
   Future<void> addProductToCart(
       String userId, int productId, String productTitle, String productImageURL, double productPrice) async {
@@ -24,7 +54,7 @@ class CartController extends ChangeNotifier {
       productId: productId,
       count: 1,
       productImageURL: productImageURL,
-      productPrice: productPrice,
+      productPrice: double.parse(productPrice.toStringAsFixed(2)),
       productTitle: productTitle,
       timestamp: DateTime.now().microsecondsSinceEpoch.toString(),
     );
@@ -36,17 +66,9 @@ class CartController extends ChangeNotifier {
           .collection(userId)
           .doc(productId.toString())
           .set(product.toJson());
-
-      _cartTotalPrice += productPrice;
-
-      await firebaseFirestore
-          .collection(FirestoreConstants.pathCartCollection)
-          .doc(userId)
-          .set({FirestoreConstants.cartTotalPrice: cartTotalPrice}, SetOptions(merge: true));
     } on Exception catch (e) {
       Fluttertoast.showToast(msg: e.toString());
     }
-    notifyListeners();
   }
 
   Stream<QuerySnapshot> getProductsInCart(String userId, int limit) {
@@ -80,19 +102,17 @@ class CartController extends ChangeNotifier {
           .doc(userId)
           .collection(userId)
           .doc(productId.toString())
-          .update({FirestoreConstants.count: count, FirestoreConstants.productPrice: price});
+          .update({
+        FirestoreConstants.count: count,
+        FirestoreConstants.productPrice: double.parse(price.toStringAsFixed(2))
+      });
     } on Exception catch (e) {
       Fluttertoast.showToast(msg: e.toString());
+      print("pado");
+      _isLoading = false;
+      notifyListeners();
     }
     _isLoading = false;
     notifyListeners();
-  }
-
-  Future<void> updateCartTotalPrice(String userId, double priceAddition) async {
-    _cartTotalPrice += priceAddition;
-    await firebaseFirestore
-        .collection(FirestoreConstants.pathCartCollection)
-        .doc(userId)
-        .update({FirestoreConstants.cartTotalPrice: cartTotalPrice});
   }
 }
