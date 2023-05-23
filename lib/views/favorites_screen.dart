@@ -1,4 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce_app_flutter/Controllers/favorites_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../Models/favorites_model.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
@@ -7,10 +12,64 @@ class FavoritesScreen extends StatefulWidget {
   State<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
+late FavoritesController favoritesProvider;
+
 class _FavoritesScreenState extends State<FavoritesScreen> {
+  void initState() {
+    favoritesProvider = Provider.of<FavoritesController>(context, listen: false);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Favorites",
+          style: TextStyle(color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+        actions: const [
+          Icon(Icons.search, color: Colors.black),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+              Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                stream: favoritesProvider.getProductsInCart(),
+                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data!.docs.isNotEmpty) {
+                      return ListView.builder(
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                          FavoritesModel favoriteProduct = FavoritesModel.fromDocument(snapshot.data!.docs[index]);
+                          return FavoriteProductCard(
+                              productPrice: favoriteProduct.productPrice,
+                              productImageURL: favoriteProduct.productImageURL,
+                              productTitle: favoriteProduct.productTitle,
+                              productId: favoriteProduct.productId);
+                        },
+                      );
+                    } else {
+                      return const Text("No products made favorite yet");
+                    }
+                  } else {
+                    return const Center(child: CircularProgressIndicator(color: Colors.redAccent));
+                  }
+                },
+              ))
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -18,7 +77,6 @@ class FavoriteProductCard extends StatefulWidget {
   final String productImageURL;
   final String productTitle;
   final int productId;
-  final int count;
   double productPrice;
 
   FavoriteProductCard({
@@ -27,7 +85,6 @@ class FavoriteProductCard extends StatefulWidget {
     required this.productImageURL,
     required this.productTitle,
     required this.productId,
-    required this.count,
   });
 
   @override
@@ -35,11 +92,6 @@ class FavoriteProductCard extends StatefulWidget {
 }
 
 class _FavoriteProductCardState extends State<FavoriteProductCard> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -97,7 +149,7 @@ class _FavoriteProductCardState extends State<FavoriteProductCard> {
                               ]),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.more_vert),
+                          icon: const Icon(Icons.close_outlined),
                           onPressed: () {},
                         )
                       ],
@@ -106,69 +158,15 @@ class _FavoriteProductCardState extends State<FavoriteProductCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Consumer<CartController>(
-                          builder: (context, cartObject, child) => cartObject.isLoading
-                              ? const Center(
-                                  child: SizedBox(
-                                    height: 50,
-                                    width: 100,
-                                    child: Center(child: CircularProgressIndicator()),
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    FloatingActionButton.small(
-                                        heroTag: "decreaseBtn${widget.count}",
-                                        onPressed: widget.count == 1
-                                            ? null
-                                            : () async {
-                                                updatedPrice = (widget.productPrice / widget.count);
-
-                                                widget.productPrice -= updatedPrice;
-
-                                                await cartProvider.setCartTotalPrice(-updatedPrice);
-
-                                                // print(-(widget.productPrice/widget.count));
-
-                                                await cartProvider.updateCartProductCountAndPrice(
-                                                    authProvider.loggedInUserId.toString(),
-                                                    widget.productId,
-                                                    widget.count - 1,
-                                                    widget.productPrice);
-                                              },
-                                        backgroundColor: Colors.white,
-                                        foregroundColor: Colors.grey,
-                                        elevation: 3,
-                                        child: const Icon(Icons.remove)),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                                      child: Text(
-                                        "${widget.count}",
-                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                    FloatingActionButton.small(
-                                        heroTag: "increaseBtn${widget.count}",
-                                        onPressed: () async {
-                                          updatedPrice = (widget.productPrice / widget.count);
-
-                                          widget.productPrice += updatedPrice;
-
-                                          await cartProvider.setCartTotalPrice(updatedPrice);
-
-                                          await cartProvider.updateCartProductCountAndPrice(
-                                              authProvider.loggedInUserId.toString(),
-                                              widget.productId,
-                                              widget.count + 1,
-                                              widget.productPrice);
-                                        },
-                                        backgroundColor: Colors.white,
-                                        foregroundColor: Colors.grey,
-                                        elevation: 3,
-                                        child: const Icon(Icons.add)),
-                                  ],
-                                ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.star, color: Colors.amber, size: 18),
+                            Icon(Icons.star, color: Colors.amber, size: 18),
+                            Icon(Icons.star, color: Colors.amber, size: 18),
+                            Icon(Icons.star, color: Colors.amber, size: 18),
+                            Icon(Icons.star_border, size: 18),
+                          ],
                         ),
                         Text("${widget.productPrice.toStringAsFixed(2)}\$",
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),

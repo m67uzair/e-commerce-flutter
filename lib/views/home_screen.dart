@@ -1,7 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:ecommerce_app_flutter/Controllers/favorites_controller.dart';
 import 'package:ecommerce_app_flutter/views/product_view_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:provider/provider.dart';
 
 import '../Models/products_model.dart';
 import '../Controllers/products_controller.dart';
@@ -85,6 +87,7 @@ class ProductList extends StatefulWidget {
 class _ProductListState extends State<ProductList> {
   @override
   Widget build(BuildContext context) {
+    print("whole  built");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(children: [
@@ -110,6 +113,7 @@ class _ProductListState extends State<ProductList> {
                 itemCount: 4,
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (context, index) {
+                  print("listview built");
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   } else {
@@ -130,11 +134,12 @@ class _ProductListState extends State<ProductList> {
                               setState(() {});
                             },
                             child: ProductCard(
-                              productsImageURL: snapshot.data![index].image.toString(),
-                              productsTitleURL: snapshot.data![index].title.toString(),
+                              productImageURL: snapshot.data![index].image.toString(),
+                              productTitle: snapshot.data![index].title.toString(),
                               productRating: snapshot.data![index].rating!.rate!.toDouble(),
                               productRatingCount: snapshot.data![index].rating!.count!.toInt(),
                               productPrice: snapshot.data![index].price!.toDouble(),
+                              productId: snapshot.data![index].id!.toInt(),
                             ),
                           )
                         : Container();
@@ -149,22 +154,29 @@ class _ProductListState extends State<ProductList> {
   }
 }
 
-class ProductCard extends StatelessWidget {
-  final String productsTitleURL;
-  final String productsImageURL;
+class ProductCard extends StatefulWidget {
+  final String productTitle;
+  final String productImageURL;
   final int productRatingCount;
   final double productRating;
   final double productPrice;
+  final int productId;
 
   const ProductCard(
       {Key? key,
-      required this.productsTitleURL,
-      required this.productsImageURL,
+      required this.productTitle,
+      required this.productImageURL,
       required this.productRating,
       required this.productRatingCount,
-      required this.productPrice})
+      required this.productPrice,
+      required this.productId})
       : super(key: key);
 
+  @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -181,16 +193,16 @@ class ProductCard extends StatelessWidget {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.network(productsImageURL),
+                    child: Image.network(widget.productImageURL),
                   ),
                 ),
                 Row(
                   children: [
                     RatingBar.builder(
                         itemCount: 5,
-                        initialRating: productRating,
-                        maxRating: productRating,
-                        minRating: productRating,
+                        initialRating: widget.productRating,
+                        maxRating: widget.productRating,
+                        minRating: widget.productRating,
                         ignoreGestures: true,
                         allowHalfRating: true,
                         itemSize: 22,
@@ -202,34 +214,83 @@ class ProductCard extends StatelessWidget {
                           // print(rating);
                         }),
                     const SizedBox(width: 5),
-                    Text('($productRatingCount)')
+                    Text('(${widget.productRatingCount})')
                   ],
                 ),
                 Text(
-                  productsTitleURL,
+                  widget.productTitle,
                   maxLines: 2,
                   style: const TextStyle(
                       color: Colors.black, fontSize: 15, fontWeight: FontWeight.w500, overflow: TextOverflow.ellipsis),
                 ),
-                Text(
-                  "$productPrice\$",
-                  style: const TextStyle(color: Colors.black),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${widget.productPrice}\$",
+                      style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
+                    ),
+                    Consumer<FavoritesController>(
+                        builder: (context, favoritesProvider, child) => FutureBuilder(
+                          future: favoritesProvider.isProductAlreadyInFavorites(widget.productId),
+                          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                            if (snapshot.hasData) {
+                              final isFavorite = snapshot.data;
+                              return IconButton(
+                                iconSize: 28,
+                                icon: Icon(
+                                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                                  color: isFavorite ? Colors.red : Colors.grey,
+                                ),
+                                onPressed: () {
+                                  if (isFavorite) {
+                                    favoritesProvider.removeProductFromFavorites(widget.productId);
+                                  } else {
+                                    favoritesProvider.addProductToFavorites(widget.productId, widget.productTitle,
+                                        widget.productImageURL, widget.productPrice);
+                                  }
+                                },
+                              );
+                            } else {
+                              return const Icon(Icons.favorite_border);
+                            }
+                          },
+                        )),
+                  ],
                 )
               ],
             ),
           ),
-          Positioned(
-            bottom: 47,
-            right: -1,
-            child: Container(
-              height: 30,
-              width: 30,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(50), color: Colors.white, boxShadow: const [
-                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 5, offset: Offset.zero)
-              ]),
-              child: const Icon(Icons.favorite_border),
-            ),
-          )
+          // Positioned(
+          //   bottom: -2,
+          //   right: -1,
+          //   child: Consumer<FavoritesController>(
+          //       builder: (context, favoritesProvider, child) => FutureBuilder(
+          //             future: favoritesProvider.isProductAlreadyInFavorites(widget.productId),
+          //             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          //               if (snapshot.hasData) {
+          //                 final isFavorite = snapshot.data;
+          //                 return IconButton(
+          //                   iconSize: 28,
+          //                   icon: Icon(
+          //                     isFavorite ? Icons.favorite : Icons.favorite_border,
+          //                     color: isFavorite ? Colors.red : Colors.grey,
+          //                   ),
+          //                   onPressed: () {
+          //                     if (isFavorite) {
+          //                       favoritesProvider.removeProductFromFavorites(widget.productId);
+          //                     } else {
+          //                       favoritesProvider.addProductToFavorites(widget.productId, widget.productTitle,
+          //                           widget.productImageURL, widget.productPrice);
+          //                     }
+          //                   },
+          //                 );
+          //               } else {
+          //                 return const Icon(Icons.favorite_border);
+          //               }
+          //             },
+          //           )),
+          // )
         ],
       ),
     );

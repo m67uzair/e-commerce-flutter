@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app_flutter/Controllers/cart_controller.dart';
+import 'package:ecommerce_app_flutter/Controllers/favorites_controller.dart';
 import 'package:ecommerce_app_flutter/auth_page.dart';
 import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
 import 'package:ecommerce_app_flutter/views/main_screen.dart';
@@ -39,8 +40,12 @@ class ECommerceApp extends StatelessWidget {
             create: (_) =>
                 AuthProvider(googleSignIn: GoogleSignIn(), firebaseAuth: FirebaseAuth.instance, prefs: prefs)),
         ChangeNotifierProvider<CartController>(
-            create: (_) =>
-                CartController(prefs: prefs, firebaseFirestore: firebaseFirestore, firebaseAuth: FirebaseAuth.instance))
+            create: (_) => CartController(
+                prefs: prefs, firebaseFirestore: firebaseFirestore, firebaseAuth: FirebaseAuth.instance)),
+        ChangeNotifierProvider<FavoritesController>(
+          create: (_) => FavoritesController(
+              prefs: prefs, firebaseFirestore: firebaseFirestore, firebaseAuth: FirebaseAuth.instance),
+        )
       ],
       child: MaterialApp(
         title: "E-commerce App flutter",

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ecommerce_app_flutter/Controllers/cart_controller.dart';
+import 'package:ecommerce_app_flutter/Controllers/favorites_controller.dart';
 import 'package:ecommerce_app_flutter/Models/products_model.dart';
 import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
@@ -139,15 +140,36 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                       children: [
                         Text("${widget.productPrice}\$",
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
-                        Container(
-                          height: 30,
-                          width: 30,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              color: Colors.white,
-                              boxShadow: const [BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)]),
-                          child: const Icon(Icons.favorite_border),
-                        )
+                        Consumer<FavoritesController>(
+                            builder: (context, favoritesProvider, child) => FutureBuilder(
+                                  future: favoritesProvider.isProductAlreadyInFavorites(widget.productId),
+                                  builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return const Center(
+                                        child: SizedBox( child: CircularProgressIndicator()),
+                                      );
+                                    } else if (snapshot.hasData) {
+                                      final isFavorite = snapshot.data;
+                                      return IconButton(
+                                        iconSize: 30,
+                                        icon: Icon(
+                                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                                          color: isFavorite ? Colors.red : Colors.grey,
+                                        ),
+                                        onPressed: () {
+                                          if (isFavorite) {
+                                            favoritesProvider.removeProductFromFavorites(widget.productId);
+                                          } else {
+                                            favoritesProvider.addProductToFavorites(widget.productId,
+                                                widget.productTitle, widget.productImageURL, widget.productPrice);
+                                          }
+                                        },
+                                      );
+                                    } else {
+                                      return const Icon(Icons.favorite_border);
+                                    }
+                                  },
+                                ))
                       ],
                     ),
                     Row(

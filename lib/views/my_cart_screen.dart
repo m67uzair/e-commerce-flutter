@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 
 import '../Controllers/products_controller.dart';
 
-final productsController = ProductsController();
 late CartController cartProvider;
 late AuthProvider authProvider;
 double updatedPrice = 0.0;
