@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app_flutter/Models/cart_model.dart';
 import 'package:ecommerce_app_flutter/constants/firestore_constants.dart';
-import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
 import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CartController extends ChangeNotifier {
@@ -38,7 +36,7 @@ class CartController extends ChangeNotifier {
   Future<void> setCartTotalPrice(double productPrice) async {
     _cartTotalPrice += productPrice;
 
-    print("total price: " + _cartTotalPrice.toString() + "added priice" + productPrice.toString());
+    // print("total price: ${_cartTotalPrice}added priice$productPrice");
 
     await prefs.setDouble(FirestoreConstants.cartTotalPrice, double.parse(_cartTotalPrice.toStringAsFixed(2)));
     notifyListeners();
@@ -108,7 +106,7 @@ class CartController extends ChangeNotifier {
       });
     } on Exception catch (e) {
       Fluttertoast.showToast(msg: e.toString());
-      print("pado");
+      // print("pado");
       _isLoading = false;
       notifyListeners();
     }
