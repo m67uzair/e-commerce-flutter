@@ -1,11 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app_flutter/Controllers/cart_controller.dart';
 import 'package:ecommerce_app_flutter/Controllers/favorites_controller.dart';
+import 'package:ecommerce_app_flutter/Controllers/products_controller.dart';
 import 'package:ecommerce_app_flutter/auth_page.dart';
 import 'package:ecommerce_app_flutter/providers/auth_provider.dart';
+import 'package:ecommerce_app_flutter/providers/profile_provider.dart';
 import 'package:ecommerce_app_flutter/views/main_screen.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -18,6 +22,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await FirebaseAppCheck.instance.activate(
+    webRecaptchaSiteKey: 'recaptcha-v3-site-key',
+    androidProvider: AndroidProvider.debug,
   );
 
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -45,6 +54,13 @@ class ECommerceApp extends StatelessWidget {
         ChangeNotifierProvider<FavoritesController>(
           create: (_) => FavoritesController(
               prefs: prefs, firebaseFirestore: firebaseFirestore, firebaseAuth: FirebaseAuth.instance),
+        ),
+        ChangeNotifierProvider<ProfileProvider>(
+          create: (_) => ProfileProvider(
+              prefs: prefs, firebaseAuth: FirebaseAuth.instance, firebaseStorage: FirebaseStorage.instance),
+        ),
+        ChangeNotifierProvider<ProductsController>(
+          create: (_) => ProductsController(),
         )
       ],
       child: MaterialApp(

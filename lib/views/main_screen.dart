@@ -25,7 +25,7 @@ class _MainScreenState extends State<MainScreen> {
   static List<Widget> navigationWidgets = [
     const HomeScreen(),
     const ShopScreen(),
-    MyCartScreen(),
+    const MyCartScreen(),
     const FavoritesScreen(),
     const ProfileScreen()
   ];

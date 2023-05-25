@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import '../Models/products_model.dart';
 import '../Controllers/products_controller.dart';
 
-final productsApi = ProductsController();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,7 +18,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print("home screen rebuilt");
     return Scaffold(
       // appBar: AppBar(
       //   leading: const Icon(Icons.menu_sharp),
@@ -38,10 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(
               height: 220,
               child: CarouselSlider(items: const [
-                ItemCarousel(
-                  title: "Men's Clothing",
-                  imagePath: "assets/images/men's clothing model.PNG",
-                ),
+                ItemCarousel(title: "Men's Clothing", imagePath: "assets/images/men's clothing model.PNG"),
                 ItemCarousel(title: "Women's Clothing", imagePath: "assets/images/women1.png"),
                 ItemCarousel(title: "Electronics", imagePath: "assets/images/electronics.jpeg"),
                 ItemCarousel(title: "jewelery", imagePath: "assets/images/jewelery.jpeg"),
@@ -86,8 +88,12 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
-    print("whole  built");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(children: [
@@ -106,47 +112,49 @@ class _ProductListState extends State<ProductList> {
         ),
         SizedBox(
           height: 280,
-          child: FutureBuilder(
-            future: productsApi.getProductsData(widget.productsListTitle.toLowerCase()),
-            builder: (context, AsyncSnapshot<List<ProductsModel>> snapshot) {
-              return ListView.builder(
-                itemCount: 4,
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  print("listview built");
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else {
-                    return snapshot.data!.isNotEmpty
-                        ? InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => ProductViewScreen(
-                                            productId: snapshot.data![index].id!.toInt(),
-                                            productImageURL: snapshot.data![index].image.toString(),
-                                            productTitle: snapshot.data![index].title.toString(),
-                                            productPrice: snapshot.data![index].price!.toDouble(),
-                                            productDescription: snapshot.data![index].description.toString(),
-                                            productRating: snapshot.data![index].rating!,
-                                          )));
-                              setState(() {});
-                            },
-                            child: ProductCard(
-                              productImageURL: snapshot.data![index].image.toString(),
-                              productTitle: snapshot.data![index].title.toString(),
-                              productRating: snapshot.data![index].rating!.rate!.toDouble(),
-                              productRatingCount: snapshot.data![index].rating!.count!.toInt(),
-                              productPrice: snapshot.data![index].price!.toDouble(),
-                              productId: snapshot.data![index].id!.toInt(),
-                            ),
-                          )
-                        : Container();
-                  }
-                },
-              );
-            },
+          child: Consumer<ProductsController>(
+            builder:(context, productsController, child) => FutureBuilder(
+              future: productsController.getProductsInCategory(widget.productsListTitle.toLowerCase()),
+              builder: (context, AsyncSnapshot<List<ProductsModel>> snapshot) {
+                return ListView.builder(
+                  itemCount: 4,
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    print("listview built");
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else {
+                      return snapshot.data!.isNotEmpty
+                          ? InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ProductViewScreen(
+                                    productId: snapshot.data![index].id!.toInt(),
+                                    productImageURL: snapshot.data![index].image.toString(),
+                                    productTitle: snapshot.data![index].title.toString(),
+                                    productPrice: snapshot.data![index].price!.toDouble(),
+                                    productDescription: snapshot.data![index].description.toString(),
+                                    productRating: snapshot.data![index].rating!,
+                                  )));
+                          setState(() {});
+                        },
+                        child: ProductCard(
+                          productImageURL: snapshot.data![index].image.toString(),
+                          productTitle: snapshot.data![index].title.toString(),
+                          productRating: snapshot.data![index].rating!.rate!.toDouble(),
+                          productRatingCount: snapshot.data![index].rating!.count!.toInt(),
+                          productPrice: snapshot.data![index].price!.toDouble(),
+                          productId: snapshot.data![index].id!.toInt(),
+                        ),
+                      )
+                          : Container();
+                    }
+                  },
+                );
+              },
+            ),
           ),
         ),
       ]),
@@ -232,30 +240,30 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                     Consumer<FavoritesController>(
                         builder: (context, favoritesProvider, child) => FutureBuilder(
-                          future: favoritesProvider.isProductAlreadyInFavorites(widget.productId),
-                          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                            if (snapshot.hasData) {
-                              final isFavorite = snapshot.data;
-                              return IconButton(
-                                iconSize: 28,
-                                icon: Icon(
-                                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                                  color: isFavorite ? Colors.red : Colors.grey,
-                                ),
-                                onPressed: () {
-                                  if (isFavorite) {
-                                    favoritesProvider.removeProductFromFavorites(widget.productId);
-                                  } else {
-                                    favoritesProvider.addProductToFavorites(widget.productId, widget.productTitle,
-                                        widget.productImageURL, widget.productPrice);
-                                  }
-                                },
-                              );
-                            } else {
-                              return const Icon(Icons.favorite_border);
-                            }
-                          },
-                        )),
+                              future: favoritesProvider.isProductAlreadyInFavorites(widget.productId),
+                              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                                if (snapshot.hasData) {
+                                  final isFavorite = snapshot.data;
+                                  return IconButton(
+                                    iconSize: 28,
+                                    icon: Icon(
+                                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                                      color: isFavorite ? Colors.red : Colors.grey,
+                                    ),
+                                    onPressed: () {
+                                      if (isFavorite) {
+                                        favoritesProvider.removeProductFromFavorites(widget.productId);
+                                      } else {
+                                        favoritesProvider.addProductToFavorites(widget.productId, widget.productTitle,
+                                            widget.productImageURL, widget.productPrice);
+                                      }
+                                    },
+                                  );
+                                } else {
+                                  return const Icon(Icons.favorite_border);
+                                }
+                              },
+                            )),
                   ],
                 )
               ],

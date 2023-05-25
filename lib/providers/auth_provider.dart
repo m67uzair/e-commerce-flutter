@@ -103,6 +103,8 @@ class AuthProvider extends ChangeNotifier {
         await prefs.setString(FirestoreConstants.phoneNumber, firebaseUser!.phoneNumber.toString() ?? "");
         await prefs.setString(FirestoreConstants.email, firebaseUser!.email.toString());
 
+        print("firebase user photo: ${firebaseUser!.photoURL}");
+
         _status = Status.authenticated;
         notifyListeners();
         return true;

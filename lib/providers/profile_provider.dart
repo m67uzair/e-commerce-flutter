@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,11 +12,38 @@ class ProfileProvider extends ChangeNotifier {
   final SharedPreferences prefs;
   final FirebaseAuth firebaseAuth;
   final FirebaseStorage firebaseStorage;
-  String photoURL = "";
+
+  String _userId = "";
+  String _photoURL = "";
+  String _displayName = "";
+  String _phoneNumber = "";
+  String _email = "";
+
   File? avatarImageFile;
   bool _isLoading = false;
 
   ProfileProvider({required this.prefs, required this.firebaseAuth, required this.firebaseStorage});
+
+  String get userId => _userId;
+
+  String get email => _email;
+
+  String get displayName => _displayName;
+
+  String get phoneNumber => _phoneNumber;
+
+  String get photoURL => _photoURL;
+
+  bool get isLoading => _isLoading;
+
+  void readLocal() {
+    _userId = prefs.getString(FirestoreConstants.userId) ?? "";
+    _email = prefs.getString(FirestoreConstants.email) ?? "";
+    _displayName = prefs.getString(FirestoreConstants.displayName) ?? "";
+    _phoneNumber = prefs.getString(FirestoreConstants.phoneNumber)==null ? "" : "3332525537";
+    _photoURL = firebaseAuth.currentUser!.photoURL ?? "";
+    // notifyListeners();
+  }
 
   Future getImage() async {
     ImagePicker imagePicker = ImagePicker();
@@ -35,7 +61,7 @@ class ProfileProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      uploadImageFile();
+      await uploadImageFile();
     }
   }
 
@@ -46,7 +72,7 @@ class ProfileProvider extends ChangeNotifier {
       Reference reference = firebaseStorage.ref().child(fileName);
       TaskSnapshot uploadTask = await reference.putFile(avatarImageFile!);
 
-      photoURL = await uploadTask.ref.getDownloadURL();
+      _photoURL = await uploadTask.ref.getDownloadURL();
 
       await prefs.setString(FirestoreConstants.photoUrl, photoURL);
       await firebaseAuth.currentUser!.updatePhotoURL(photoURL);

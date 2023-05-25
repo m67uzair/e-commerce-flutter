@@ -1,57 +1,62 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 import '../Models/products_model.dart';
 import 'package:http/http.dart' as http;
 
-class ProductsController {
+class ProductsController extends ChangeNotifier {
+  bool _isLoading = false;
   List<ProductsModel> mensProductsList = [];
   List<ProductsModel> womensProductsList = [];
   List<ProductsModel> electronicsProductsList = [];
   List<ProductsModel> jeweleryProductsList = [];
+  List<ProductsModel> _allProducts = [];
+  List<ProductsModel> _productsInCategory = [];
 
-  Future<List<ProductsModel>> getProductsData(String category) async {
-    // final response = await http.get(Uri.parse("https://fakestoreapi.com/products/category/men's clothing"));
+  bool get isLoading => _isLoading;
+
+  List<ProductsModel> get productsInCategory => _productsInCategory;
+
+  Future<List<ProductsModel>> fetchAllProducts() async {
+    _isLoading = true;
+    notifyListeners();
+
+    final response = await http.get(Uri.parse("https://fakestoreapi.com/products"));
+    var data = jsonDecode(response.body.toString());
+
+    if (response.statusCode == 200) {
+      for (Map i in data) {
+        _allProducts.add(ProductsModel.fromJson(i));
+      }
+      _isLoading = false;
+      notifyListeners();
+    } else {
+      _isLoading = false;
+      notifyListeners();
+      Fluttertoast.showToast(msg: "Error Code: ${response.statusCode}");
+      return [];
+    }
+    return _allProducts;
+  }
+
+  Future<List<ProductsModel>> getProductsInCategory(String category) async {
+
+
     final response = await http.get(Uri.parse("https://fakestoreapi.com/products/category/$category"));
     var data = jsonDecode(response.body.toString());
 
     if (response.statusCode == 200) {
-      switch (category) {
-        case "men's clothing":
-          {
-            mensProductsList.clear();
-            for (Map i in data) {
-              mensProductsList.add(ProductsModel.fromJson(i));
-            }
-            return mensProductsList;
-          }
-        case "women's clothing":
-          {
-            womensProductsList.clear();
-            for (Map i in data) {
-              womensProductsList.add(ProductsModel.fromJson(i));
-            }
-            return womensProductsList;
-          }
-        case "jewelery":
-          {
-            jeweleryProductsList.clear();
-            for (Map i in data) {
-              jeweleryProductsList.add(ProductsModel.fromJson(i));
-            }
-            return jeweleryProductsList;
-          }
-        case "electronics":
-          {
-            electronicsProductsList.clear();
-            for (Map i in data) {
-              electronicsProductsList.add(ProductsModel.fromJson(i));
-            }
-            return electronicsProductsList;
-          }
+      for (Map i in data) {
+        _productsInCategory.add(ProductsModel.fromJson(i));
       }
-      return [];
+
     } else {
+
       return [];
+      Fluttertoast.showToast(msg: "Error Code: ${response.statusCode}");
     }
+    return _productsInCategory;
   }
 
   List<ProductsModel> productsInCart = [];

@@ -1,36 +1,34 @@
 import 'dart:io';
 
-import 'package:ecommerce_app_flutter/constants/firestore_constants.dart';
-import 'package:ecommerce_app_flutter/models/user_model.dart';
+import 'package:ecommerce_app_flutter/views/my_cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:form_validator/form_validator.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/profile_provider.dart';
 import '../widgets/sign_up_and_login_widgets.dart';
 
-class ProfileSettingsScreen extends StatefulWidget {
-  const ProfileSettingsScreen({super.key});
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
 
   @override
-  State<ProfileSettingsScreen> createState() => _ProfileSettingsScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
+class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController displayNameController;
-  late TextEditingController aboutMeController;
+  late TextEditingController emailController;
   late TextEditingController numberController;
 
   late String currentUserId;
-  String dialCodeDigits = "+00";
+  String dialCodeDigits = "+92";
   String id = '';
   String displayName = '';
   String photoUrl = '';
   String phoneNumber = '';
-  String aboutMe = '';
+  String email = '';
 
   bool isLoading = false;
   File? avatarImageFile;
@@ -38,23 +36,26 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   final FocusNode focusNodeNickname = FocusNode();
 
   void readLocal() {
-    setState(() {
-
-      displayName = profileProvider.getPrefs(FirestoreConstants.displayName) ?? "";
-      photoUrl = profileProvider.getPrefs(FirestoreConstants.photoUrl) ?? "";
-
-    });
+    profileProvider.readLocal();
+    id = profileProvider.userId;
+    displayName = profileProvider.displayName;
+    email = profileProvider.email;
+    photoUrl = profileProvider.photoURL;
+    phoneNumber = profileProvider.phoneNumber;
 
     displayNameController = TextEditingController(text: displayName);
+    emailController = TextEditingController(text: email);
+    numberController = TextEditingController(text: phoneNumber);
+
+    print("photo" + photoUrl);
   }
 
   @override
   void initState() {
     super.initState();
-    profileProvider = context.read<ProfileProvider>();
+    profileProvider = Provider.of<ProfileProvider>(context, listen: false);
     readLocal();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -78,59 +79,68 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               children: [
                 GestureDetector(
                   onTap: () async {
-                    await getImage();
+                    showDialog(
+                      context: context,
+                      builder: (context) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      barrierDismissible: false,
+                    );
+                    await profileProvider.getImage().then((value) => Navigator.of(context, rootNavigator: true).pop());
                   },
-                  child: Container(
-                    alignment: Alignment.center,
-                    margin: const EdgeInsets.all(20),
-                    child: avatarImageFile == null
-                        ? photoUrl.isNotEmpty
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(60),
-                                child: Image.network(
-                                  photoUrl,
-                                  fit: BoxFit.cover,
-                                  width: 120,
-                                  height: 120,
-                                  errorBuilder: (context, error, stackTrace) => const Icon(
-                                    Icons.account_circle,
-                                    size: 90,
-                                    color: Colors.grey,
-                                  ),
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) {
-                                      return child;
-                                    }
-                                    return SizedBox(
-                                      width: 90,
-                                      height: 90,
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          color: Colors.grey,
-                                          value: loadingProgress.expectedTotalBytes != null
-                                              ? loadingProgress.cumulativeBytesLoaded /
-                                                  loadingProgress.expectedTotalBytes!
-                                              : null,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              )
-                            : const Icon(
-                                Icons.account_circle,
-                                size: 90,
-                                color: Colors.grey,
-                              )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(60),
-                            child: Image.file(
-                              avatarImageFile!,
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.cover,
-                            ),
+                  child: Consumer<ProfileProvider>(
+                    builder: (context, value, child) => Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.all(20),
+                      child: avatarImageFile == null
+                          ? value.photoURL.isNotEmpty
+                          ? ClipRRect(
+                        borderRadius: BorderRadius.circular(60),
+                        child: Image.network(
+                          value.photoURL,
+                          fit: BoxFit.cover,
+                          width: 120,
+                          height: 120,
+                          errorBuilder: (context, error, stackTrace) => const Icon(
+                            Icons.account_circle,
+                            size: 90,
+                            color: Colors.grey,
                           ),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            }
+                            return SizedBox(
+                              width: 90,
+                              height: 90,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.grey,
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                          : const Icon(
+                        Icons.account_circle,
+                        size: 90,
+                        color: Colors.grey,
+                      )
+                          : ClipRRect(
+                        borderRadius: BorderRadius.circular(60),
+                        child: Image.file(
+                          avatarImageFile!,
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const Text(
@@ -158,51 +168,58 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Form(
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 20),
-                            CustomTextFormField(
-                              icon: const Icon(Icons.person),
-                              controller: displayNameController,
-                              label: "Name",
-                              hintText: 'John Doe',
-                              validator: RequiredValidator(errorText: 'Name Can\'t Be Empty'),
-                            ),
-                            const SizedBox(height: 20),
-                            CustomTextFormField(
-                              icon: const Icon(Icons.info_outline),
-                              controller: aboutMeController,
-                              label: const Text("About Me"),
-                              hintText: 'I love cooking',
-                              validator: (value) {
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 20),
-                            IntlPhoneField(
-                              controller: numberController,
-                              decoration: const InputDecoration(
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Colors.black12,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 20),
+                              CustomTextFormField(
+                                controller: displayNameController,
+                                label: "Name",
+                                validator: ValidationBuilder().required().build(),
+                              ),
+                              const SizedBox(height: 20),
+                              CustomTextFormField(
+                                controller: emailController,
+                                label: "E-mail",
+                                validator: ValidationBuilder().email().required().build(),
+                              ),
+                              const SizedBox(height: 20),
+                              IntlPhoneField(
+                                controller: numberController,
+                                initialCountryCode: "PK",
+                                decoration: const InputDecoration(
+                                  enabled: false,
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Colors.black12,
+                                    ),
                                   ),
+                                  label: Text('Phone Number'),
                                 ),
-                                label: Text('Phone Number'),
                               ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                displayName = displayNameController.text;
-                                aboutMe = aboutMeController.text;
-                                phoneNumber = numberController.text;
-                                updateFirestoreData();
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('Update Info'),
+                              ElevatedButton(
+                                onPressed: () {
+                                  displayName = displayNameController.text;
+                                  email = emailController.text;
+                                  phoneNumber = numberController.text;
+                                  profileProvider.updateDisplayName(displayName);
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('Update Info'),
+                                ),
                               ),
-                            )
-                          ],
+                              ElevatedButton(
+                                onPressed: () {
+                                  authProvider.signOut();
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('Log out'),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -211,7 +228,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ],
             ),
           ),
-          Positioned(child: isLoading ? const CircularProgressIndicator() : const SizedBox.shrink())
+          // Consumer<ProfileProvider>(
+          //   builder: (context, value, child) => Positioned(
+          //     child: value.isLoading ? const CircularProgressIndicator() : const SizedBox.shrink(),
+          //   ),
+          // ),
         ],
       ),
     );

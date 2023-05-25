@@ -47,6 +47,7 @@ dependencies:
   form_validator: ^2.1.1
   intl_phone_field: ^3.1.0
   firebase_storage: ^11.2.1
+  firebase_app_check: ^0.1.4+1
 
 dev_dependencies:
   flutter_test:

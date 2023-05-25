@@ -27,7 +27,7 @@ class CartController extends ChangeNotifier {
             .collection(FirestoreConstants.pathCartCollection)
             .doc(authProvider.loggedInUserId)
             .get())
-        .data()![FirestoreConstants.cartTotalPrice];
+        .data()![FirestoreConstants.cartTotalPrice] ?? 0.0;
     // _isLoading = false;
     notifyListeners();
     return _cartTotalPrice;
