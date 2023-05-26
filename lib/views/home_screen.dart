@@ -1,13 +1,11 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:ecommerce_app_flutter/Controllers/favorites_controller.dart';
+import 'package:ecommerce_app_flutter/Widgets/product_card_widget.dart';
 import 'package:ecommerce_app_flutter/views/product_view_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 
 import '../Models/products_model.dart';
 import '../Controllers/products_controller.dart';
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,8 +15,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late final ProductsController productsApi;
+
   @override
   void initState() {
+    productsApi = Provider.of<ProductsController>(context, listen: false);
+    productsApi.fetchAllProducts();
     super.initState();
   }
 
@@ -26,53 +28,56 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     print("home screen rebuilt");
     return Scaffold(
-      // appBar: AppBar(
-      //   leading: const Icon(Icons.menu_sharp),
-      //   title: const Text(
-      //     "Hello Word!",
-      //     style: TextStyle(color: Colors.black),
-      //   ),
-      //   actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.shopping_cart_outlined))],
-      // ),
+        // appBar: AppBar(
+        //   leading: const Icon(Icons.menu_sharp),
+        //   title: const Text(
+        //     "Hello Word!",
+        //     style: TextStyle(color: Colors.black),
+        //   ),
+        //   actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.shopping_cart_outlined))],
+        // ),
 
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(
-              height: 220,
-              child: CarouselSlider(items: const [
-                ItemCarousel(title: "Men's Clothing", imagePath: "assets/images/men's clothing model.PNG"),
-                ItemCarousel(title: "Women's Clothing", imagePath: "assets/images/women1.png"),
-                ItemCarousel(title: "Electronics", imagePath: "assets/images/electronics.jpeg"),
-                ItemCarousel(title: "jewelery", imagePath: "assets/images/jewelery.jpeg"),
-              ], options: CarouselOptions(autoPlay: true, viewportFraction: 1, height: 400)),
+        body: Consumer<ProductsController>(
+      builder: (context, productsController, child) => productsController.isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.redAccent))
+          : SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    height: 220,
+                    child: CarouselSlider(items: const [
+                      ItemCarousel(title: "Men's Clothing", imagePath: "assets/images/men's clothing model.PNG"),
+                      ItemCarousel(title: "Women's Clothing", imagePath: "assets/images/women1.png"),
+                      ItemCarousel(title: "Electronics", imagePath: "assets/images/electronics.jpeg"),
+                      ItemCarousel(title: "jewelery", imagePath: "assets/images/jewelery.jpeg"),
+                    ], options: CarouselOptions(autoPlay: true, viewportFraction: 1, height: 400)),
+                  ),
+                  const SizedBox(height: 30),
+                  ProductList(
+                    productsListTitle: "Men's Clothing",
+                    onViewAllPressed: () {},
+                  ),
+                  const SizedBox(height: 50),
+                  ProductList(
+                    productsListTitle: "Women's Clothing",
+                    onViewAllPressed: () {},
+                  ),
+                  const SizedBox(height: 50),
+                  ProductList(
+                    productsListTitle: "Electronics",
+                    onViewAllPressed: () {},
+                  ),
+                  const SizedBox(height: 50),
+                  ProductList(
+                    productsListTitle: "jewelery",
+                    onViewAllPressed: () {},
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 30),
-            ProductList(
-              productsListTitle: "Men's Clothing",
-              onViewAllPressed: () {},
-            ),
-            const SizedBox(height: 50),
-            ProductList(
-              productsListTitle: "Women's Clothing",
-              onViewAllPressed: () {},
-            ),
-            const SizedBox(height: 50),
-            ProductList(
-              productsListTitle: "Electronics",
-              onViewAllPressed: () {},
-            ),
-            const SizedBox(height: 50),
-            ProductList(
-              productsListTitle: "jewelery",
-              onViewAllPressed: () {},
-            ),
-          ],
-        ),
-      ),
-    );
+    ));
   }
 }
 
@@ -87,11 +92,18 @@ class ProductList extends StatefulWidget {
 }
 
 class _ProductListState extends State<ProductList> {
+  List<ProductsModel> productsList = [];
+  late final ProductsController productsApi;
+
   @override
   void initState() {
-    // TODO: implement initState
+    print("init called");
+    productsApi = Provider.of(context, listen: false);
+    productsList = productsApi.fetchProductsInCategory(category: widget.productsListTitle.toLowerCase());
+
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -112,195 +124,43 @@ class _ProductListState extends State<ProductList> {
         ),
         SizedBox(
           height: 280,
-          child: Consumer<ProductsController>(
-            builder:(context, productsController, child) => FutureBuilder(
-              future: productsController.getProductsInCategory(widget.productsListTitle.toLowerCase()),
-              builder: (context, AsyncSnapshot<List<ProductsModel>> snapshot) {
-                return ListView.builder(
-                  itemCount: 4,
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) {
-                    print("listview built");
-                    if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else {
-                      return snapshot.data!.isNotEmpty
-                          ? InkWell(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ProductViewScreen(
-                                    productId: snapshot.data![index].id!.toInt(),
-                                    productImageURL: snapshot.data![index].image.toString(),
-                                    productTitle: snapshot.data![index].title.toString(),
-                                    productPrice: snapshot.data![index].price!.toDouble(),
-                                    productDescription: snapshot.data![index].description.toString(),
-                                    productRating: snapshot.data![index].rating!,
-                                  )));
-                          setState(() {});
-                        },
-                        child: ProductCard(
-                          productImageURL: snapshot.data![index].image.toString(),
-                          productTitle: snapshot.data![index].title.toString(),
-                          productRating: snapshot.data![index].rating!.rate!.toDouble(),
-                          productRatingCount: snapshot.data![index].rating!.count!.toInt(),
-                          productPrice: snapshot.data![index].price!.toDouble(),
-                          productId: snapshot.data![index].id!.toInt(),
-                        ),
-                      )
-                          : Container();
-                    }
+          child: ListView.builder(
+            itemCount: productsList.length,
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) {
+              if (productsList.isNotEmpty) {
+                ProductsModel product = productsList[index];
+                print("pado built ${productsList.length}");
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ProductViewScreen(
+                                  productId: product.id!.toInt(),
+                                  productImageURL: product.image.toString(),
+                                  productTitle: product.title.toString(),
+                                  productPrice: product.price!.toDouble(),
+                                  productDescription: product.description.toString(),
+                                  productRating: product.rating!,
+                                )));
                   },
+                  child: ProductCard(
+                    productImageURL: product.image.toString(),
+                    productTitle: product.title.toString(),
+                    productRating: product.rating!.rate!.toDouble(),
+                    productRatingCount: product.rating!.count!.toInt(),
+                    productPrice: product.price!.toDouble(),
+                    productId: product.id!.toInt(),
+                  ),
                 );
-              },
-            ),
+              } else {
+                return Container();
+              }
+            },
           ),
         ),
       ]),
-    );
-  }
-}
-
-class ProductCard extends StatefulWidget {
-  final String productTitle;
-  final String productImageURL;
-  final int productRatingCount;
-  final double productRating;
-  final double productPrice;
-  final int productId;
-
-  const ProductCard(
-      {Key? key,
-      required this.productTitle,
-      required this.productImageURL,
-      required this.productRating,
-      required this.productRatingCount,
-      required this.productPrice,
-      required this.productId})
-      : super(key: key);
-
-  @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 180,
-      child: Stack(
-        children: [
-          Card(
-            elevation: 0,
-            color: Colors.transparent,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(widget.productImageURL),
-                  ),
-                ),
-                Row(
-                  children: [
-                    RatingBar.builder(
-                        itemCount: 5,
-                        initialRating: widget.productRating,
-                        maxRating: widget.productRating,
-                        minRating: widget.productRating,
-                        ignoreGestures: true,
-                        allowHalfRating: true,
-                        itemSize: 22,
-                        itemBuilder: (context, index) => const Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                            ),
-                        onRatingUpdate: (rating) {
-                          // print(rating);
-                        }),
-                    const SizedBox(width: 5),
-                    Text('(${widget.productRatingCount})')
-                  ],
-                ),
-                Text(
-                  widget.productTitle,
-                  maxLines: 2,
-                  style: const TextStyle(
-                      color: Colors.black, fontSize: 15, fontWeight: FontWeight.w500, overflow: TextOverflow.ellipsis),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "${widget.productPrice}\$",
-                      style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
-                    ),
-                    Consumer<FavoritesController>(
-                        builder: (context, favoritesProvider, child) => FutureBuilder(
-                              future: favoritesProvider.isProductAlreadyInFavorites(widget.productId),
-                              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                                if (snapshot.hasData) {
-                                  final isFavorite = snapshot.data;
-                                  return IconButton(
-                                    iconSize: 28,
-                                    icon: Icon(
-                                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                                      color: isFavorite ? Colors.red : Colors.grey,
-                                    ),
-                                    onPressed: () {
-                                      if (isFavorite) {
-                                        favoritesProvider.removeProductFromFavorites(widget.productId);
-                                      } else {
-                                        favoritesProvider.addProductToFavorites(widget.productId, widget.productTitle,
-                                            widget.productImageURL, widget.productPrice);
-                                      }
-                                    },
-                                  );
-                                } else {
-                                  return const Icon(Icons.favorite_border);
-                                }
-                              },
-                            )),
-                  ],
-                )
-              ],
-            ),
-          ),
-          // Positioned(
-          //   bottom: -2,
-          //   right: -1,
-          //   child: Consumer<FavoritesController>(
-          //       builder: (context, favoritesProvider, child) => FutureBuilder(
-          //             future: favoritesProvider.isProductAlreadyInFavorites(widget.productId),
-          //             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-          //               if (snapshot.hasData) {
-          //                 final isFavorite = snapshot.data;
-          //                 return IconButton(
-          //                   iconSize: 28,
-          //                   icon: Icon(
-          //                     isFavorite ? Icons.favorite : Icons.favorite_border,
-          //                     color: isFavorite ? Colors.red : Colors.grey,
-          //                   ),
-          //                   onPressed: () {
-          //                     if (isFavorite) {
-          //                       favoritesProvider.removeProductFromFavorites(widget.productId);
-          //                     } else {
-          //                       favoritesProvider.addProductToFavorites(widget.productId, widget.productTitle,
-          //                           widget.productImageURL, widget.productPrice);
-          //                     }
-          //                   },
-          //                 );
-          //               } else {
-          //                 return const Icon(Icons.favorite_border);
-          //               }
-          //             },
-          //           )),
-          // )
-        ],
-      ),
     );
   }
 }
