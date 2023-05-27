@@ -23,11 +23,12 @@ class CartController extends ChangeNotifier {
   Future<double> getCartTotalPrice() async {
     // _isLoading = true;
     // notifyListeners();
-    _cartTotalPrice = (await firebaseFirestore
-            .collection(FirestoreConstants.pathCartCollection)
-            .doc(authProvider.loggedInUserId)
-            .get())
-        .data()![FirestoreConstants.cartTotalPrice] ?? 0.0;
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await firebaseFirestore
+        .collection(FirestoreConstants.pathCartCollection)
+        .doc(authProvider.loggedInUserId)
+        .get();
+
+    _cartTotalPrice = snapshot.exists ? snapshot.data()![FirestoreConstants.cartTotalPrice] : 0.0;
     // _isLoading = false;
     notifyListeners();
     return _cartTotalPrice;

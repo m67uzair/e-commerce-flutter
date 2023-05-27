@@ -30,9 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     print("home screen rebuilt");
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent
-      ),
+      value: const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
       child: Scaffold(
           body: Consumer<ProductsController>(
         builder: (context, productsController, child) => productsController.isLoading
@@ -55,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     flex: 1,
                     fit: FlexFit.loose,
                     child: ListView.builder(
-                        reverse: true,
                         itemCount: productsApi.categories.length,
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         itemBuilder: (context, index) {

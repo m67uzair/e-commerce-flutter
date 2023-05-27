@@ -94,52 +94,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       margin: const EdgeInsets.all(20),
                       child: avatarImageFile == null
                           ? value.photoURL.isNotEmpty
-                          ? ClipRRect(
-                        borderRadius: BorderRadius.circular(60),
-                        child: Image.network(
-                          value.photoURL,
-                          fit: BoxFit.cover,
-                          width: 120,
-                          height: 120,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.account_circle,
-                            size: 90,
-                            color: Colors.grey,
-                          ),
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            }
-                            return SizedBox(
-                              width: 90,
-                              height: 90,
-                              child: Center(
-                                child: CircularProgressIndicator(
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(60),
+                                  child: Image.network(
+                                    value.photoURL,
+                                    fit: BoxFit.cover,
+                                    width: 120,
+                                    height: 120,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.account_circle,
+                                      size: 90,
+                                      color: Colors.grey,
+                                    ),
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        return child;
+                                      }
+                                      return SizedBox(
+                                        width: 90,
+                                        height: 90,
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            color: Colors.grey,
+                                            value: loadingProgress.expectedTotalBytes != null
+                                                ? loadingProgress.cumulativeBytesLoaded /
+                                                    loadingProgress.expectedTotalBytes!
+                                                : null,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.account_circle,
+                                  size: 90,
                                   color: Colors.grey,
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                          : const Icon(
-                        Icons.account_circle,
-                        size: 90,
-                        color: Colors.grey,
-                      )
+                                )
                           : ClipRRect(
-                        borderRadius: BorderRadius.circular(60),
-                        child: Image.file(
-                          avatarImageFile!,
-                          width: 120,
-                          height: 120,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+                              borderRadius: BorderRadius.circular(60),
+                              child: Image.file(
+                                avatarImageFile!,
+                                width: 120,
+                                height: 120,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -197,25 +197,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   label: Text('Phone Number'),
                                 ),
                               ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  displayName = displayNameController.text;
-                                  email = emailController.text;
-                                  phoneNumber = numberController.text;
-                                  profileProvider.updateDisplayName(displayName);
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text('Update Info'),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  style: ButtonStyle(
+                                      backgroundColor: const MaterialStatePropertyAll(Color(0xffDB3022)),
+                                      padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 16)),
+                                      shape: MaterialStatePropertyAll(
+                                          RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))
+                                  ),
+                                  onPressed: () {
+                                    displayName = displayNameController.text;
+                                    email = emailController.text;
+                                    phoneNumber = numberController.text;
+                                    profileProvider.updateDisplayName(displayName);
+                                  },
+                                  child: const Text(
+                                    "UPDATE DATA",
+                                    style: TextStyle(fontSize: 17),
+                                  ),
                                 ),
                               ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  authProvider.signOut();
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text('Log out'),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  style: ButtonStyle(
+                                      backgroundColor: const MaterialStatePropertyAll(Color(0xffDB3022)),
+                                      padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 16)),
+                                      shape: MaterialStatePropertyAll(
+                                          RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)))),
+                                  onPressed: () {
+                                    authProvider.signOut();
+                                  },
+                                  child: const Text(
+                                    "SIGN OUT",
+                                    style: TextStyle(fontSize: 17),
+                                  ),
                                 ),
                               ),
                             ],

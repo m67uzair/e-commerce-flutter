@@ -239,7 +239,7 @@ class _CartProductCardState extends State<CartProductCard> {
                                   children: [
                                     FloatingActionButton.small(
                                         heroTag: "decreaseBtn${widget.count}",
-                                        onPressed: widget.count == 1
+                                        onPressed: widget.count == 1 || cartObject.isLoading
                                             ? null
                                             : () async {
                                                 updatedPrice = (widget.productPrice / widget.count);
@@ -269,19 +269,21 @@ class _CartProductCardState extends State<CartProductCard> {
                                     ),
                                     FloatingActionButton.small(
                                         heroTag: "increaseBtn${widget.count}",
-                                        onPressed: () async {
-                                          updatedPrice = (widget.productPrice / widget.count);
+                                        onPressed: cartObject.isLoading
+                                            ? null
+                                            : () async {
+                                                updatedPrice = (widget.productPrice / widget.count);
 
-                                          widget.productPrice += updatedPrice;
+                                                widget.productPrice += updatedPrice;
 
-                                          await cartProvider.setCartTotalPrice(updatedPrice);
+                                                await cartProvider.setCartTotalPrice(updatedPrice);
 
-                                          await cartProvider.updateCartProductCountAndPrice(
-                                              authProvider.loggedInUserId.toString(),
-                                              widget.productId,
-                                              widget.count + 1,
-                                              widget.productPrice);
-                                        },
+                                                await cartProvider.updateCartProductCountAndPrice(
+                                                    authProvider.loggedInUserId.toString(),
+                                                    widget.productId,
+                                                    widget.count + 1,
+                                                    widget.productPrice);
+                                              },
                                         backgroundColor: Colors.white,
                                         foregroundColor: Colors.grey,
                                         elevation: 3,
