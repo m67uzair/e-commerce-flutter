@@ -81,11 +81,13 @@ class ECommerceApp extends StatelessWidget {
         ),
         theme: ThemeData(
             appBarTheme: const AppBarTheme(
-                backgroundColor: Color(0xffF9F9F9),
-                elevation: 0,
-                systemOverlayStyle: SystemUiOverlayStyle(
-                  statusBarColor: Color(0xffF9F9F9),
-                )),
+              backgroundColor: Color(0xffF9F9F9),
+              elevation: 0,
+              iconTheme: IconThemeData(color: Color(0xff222222)),
+              systemOverlayStyle: SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+              ),
+            ),
             scaffoldBackgroundColor: const Color(0xffF9F9F9)),
       ),
     );

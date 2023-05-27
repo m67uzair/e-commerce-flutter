@@ -1,7 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:ecommerce_app_flutter/Widgets/product_card_widget.dart';
 import 'package:ecommerce_app_flutter/views/product_view_screen.dart';
+import 'package:ecommerce_app_flutter/views/shop_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../Models/products_model.dart';
@@ -27,21 +29,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     print("home screen rebuilt");
-    return Scaffold(
-        // appBar: AppBar(
-        //   leading: const Icon(Icons.menu_sharp),
-        //   title: const Text(
-        //     "Hello Word!",
-        //     style: TextStyle(color: Colors.black),
-        //   ),
-        //   actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.shopping_cart_outlined))],
-        // ),
-
-        body: Consumer<ProductsController>(
-      builder: (context, productsController, child) => productsController.isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.redAccent))
-          : SingleChildScrollView(
-              child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent
+      ),
+      child: Scaffold(
+          body: Consumer<ProductsController>(
+        builder: (context, productsController, child) => productsController.isLoading
+            ? const Center(child: CircularProgressIndicator(color: Colors.redAccent))
+            : Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -55,37 +51,34 @@ class _HomeScreenState extends State<HomeScreen> {
                     ], options: CarouselOptions(autoPlay: true, viewportFraction: 1, height: 400)),
                   ),
                   const SizedBox(height: 30),
-                  ProductList(
-                    productsListTitle: "Men's Clothing",
-                    onViewAllPressed: () {},
-                  ),
-                  const SizedBox(height: 50),
-                  ProductList(
-                    productsListTitle: "Women's Clothing",
-                    onViewAllPressed: () {},
-                  ),
-                  const SizedBox(height: 50),
-                  ProductList(
-                    productsListTitle: "Electronics",
-                    onViewAllPressed: () {},
-                  ),
-                  const SizedBox(height: 50),
-                  ProductList(
-                    productsListTitle: "jewelery",
-                    onViewAllPressed: () {},
-                  ),
+                  Flexible(
+                    flex: 1,
+                    fit: FlexFit.loose,
+                    child: ListView.builder(
+                        reverse: true,
+                        itemCount: productsApi.categories.length,
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        itemBuilder: (context, index) {
+                          return ProductList(categoryIndex: index);
+                        }),
+                  )
                 ],
               ),
-            ),
-    ));
+      )),
+    );
   }
 }
 
 class ProductList extends StatefulWidget {
-  final String productsListTitle;
-  final Function onViewAllPressed;
+  final int categoryIndex;
 
-  const ProductList({super.key, required this.productsListTitle, required this.onViewAllPressed});
+  // final Function onViewAllPressed;
+
+  const ProductList({
+    super.key,
+    required this.categoryIndex,
+    // required this.onViewAllPressed
+  });
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -94,12 +87,13 @@ class ProductList extends StatefulWidget {
 class _ProductListState extends State<ProductList> {
   List<ProductsModel> productsList = [];
   late final ProductsController productsApi;
+  String category = '';
 
   @override
   void initState() {
-    print("init called");
     productsApi = Provider.of(context, listen: false);
-    productsList = productsApi.fetchProductsInCategory(category: widget.productsListTitle.toLowerCase());
+    category = productsApi.categories[widget.categoryIndex];
+    productsList = productsApi.fetchProductsInCategory(category: category);
 
     super.initState();
   }
@@ -112,10 +106,16 @@ class _ProductListState extends State<ProductList> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(widget.productsListTitle,
-                style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 30)),
+            Text(category, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 30)),
             TextButton(
-                onPressed: widget.onViewAllPressed(),
+                onPressed: () {
+                  print("index: ${widget.categoryIndex}");
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ShopScreen(passedIndex: widget.categoryIndex),
+                      ));
+                },
                 child: const Text(
                   "View All",
                   style: TextStyle(color: Colors.black87, fontSize: 16),
